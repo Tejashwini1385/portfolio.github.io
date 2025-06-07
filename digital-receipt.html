@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Receipt and Reconciliation System - Walmart Use Case</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #fefefe;
+    color: #222;
+  }
+  h1 {
+    color: #005a9c;
+    margin-bottom: 5px;
+  }
+  h2 {
+    color: #004080;
+  }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+  .table-container {
+    flex: 1 1 350px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 500px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background-color: #005a9c;
+    color: white;
+  }
+  #workflow-container {
+    flex: 2 1 600px;
+    text-align: center;
+  }
+  svg {
+    border: 1px solid #ccc;
+    background: #fff;
+    margin-top: 10px;
+    max-width: 100%;
+    height: 400px;
+  }
+  rect.node {
+    fill: #ddd;
+    stroke: #666;
+    stroke-width: 2px;
+    cursor: default;
+  }
+  rect.node.active {
+    fill: #4CAF50;
+  }
+  rect.node.completed {
+    fill: #2196f3;
+  }
+  text.label {
+    font-size: 14px;
+    user-select: none;
+    pointer-events: none;
+  }
+  .controls {
+    margin: 15px auto 30px;
+    max-width: 600px;
+    text-align: center;
+  }
+  button {
+    background: #005a9c;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    border-radius: 4px;
+  }
+  button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  #workflowInfo {
+    max-width: 600px;
+    margin: 10px auto;
+    font-family: monospace;
+    background: #eee;
+    border-radius: 4px;
+    padding: 10px;
+    min-height: 40px;
+  }
+  section#explanation {
+    max-width: 600px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>Digital Receipt and Reconciliation System</h1>
+
+<div class="container">
+  <!-- Table Content describing the use case -->
+  <div class="table-container" aria-label="Use case details table">
+    <h2>Use Case Overview</h2>
+    <table>
+      <tr><th>Aspect</th><th>Details</th></tr>
+      <tr>
+        <td>Use Case Name</td>
+        <td>Digital Receipt and Reconciliation System</td>
+      </tr>
+      <tr>
+        <td>Problem</td>
+        <td>Automate receipt generation and reconcile transactions accurately to prevent errors and discrepancies.</td>
+      </tr>
+      <tr>
+        <td>Algorithm</td>
+        <td>Event-driven reconciliation with hash-based receipt verification and anomaly detection.</td>
+      </tr>
+      <tr>
+        <td>Data Structures</td>
+        <td>Hash maps for receipts, queues for transaction processing, and logs for audit trails.</td>
+      </tr>
+      <tr>
+        <td>Application</td>
+        <td>Ensures accuracy of transactions and inventory by digital reconciliation in Walmart's stores.</td>
+      </tr>
+      <tr>
+        <td>Expected Impact</td>
+        <td>Reduced errors, faster audits, improved trust and compliance, and streamlined checkout processes.</td>
+      </tr>
+    </table>
+
+    <h2>Key Features</h2>
+    <table>
+      <tr><th>Feature</th><th>Description</th></tr>
+      <tr>
+        <td>Digital Receipt Generation</td>
+        <td>Instant generation of secure digital receipts for every transaction.</td>
+      </tr>
+      <tr>
+        <td>Reconciliation Process</td>
+        <td>Automated matching of sales data and receipts to identify inconsistencies.</td>
+      </tr>
+      <tr>
+        <td>Anomaly Detection</td>
+        <td>Flags suspicious transactions for review using heuristic rules.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Interactive Visualization and Explanation -->
+  <div id="workflow-container">
+    <div class="controls" role="region" aria-label="Controls to run reconciliation workflow">
+      <button id="startBtn">Start Workflow</button>
+      <button id="nextStepBtn" disabled>Next Step</button>
+      <button id="resetBtn" disabled>Reset</button>
+    </div>
+
+    <svg width="600" height="400" role="img" aria-label="Digital receipt and reconciliation workflow diagram"></svg>
+
+    <div id="workflowInfo" aria-live="polite" aria-atomic="true" aria-relevant="text">
+      Workflow Status: <em>Not started</em>
+    </div>
+
+    <section id="explanation" aria-label="Explanation of use case and algorithm">
+      <h2>Use Case Description</h2>
+      <p>
+        This demo simulates a simplified <strong>digital receipt and reconciliation workflow</strong>.
+        The workflow includes stages such as Receipt Generated, Transaction Recorded, Reconciliation, and Anomaly Review.
+      </p>
+      <p>
+        Stepwise progression demonstrates how Walmart automates transaction reconciliation, ensuring accuracy and quickly highlighting potential discrepancies for staff to review.
+      </p>
+    </section>
+  </div>
+</div>
+
+<script>
+// Workflow stages with labels and SVG positions
+const stages = [
+  { id: "receiptGenerated", label: "Receipt Generated", x: 50, y: 180 },
+  { id: "transactionRecorded", label: "Transaction Recorded", x: 220, y: 180 },
+  { id: "reconciliation", label: "Reconciliation", x: 390, y: 180 },
+  { id: "anomalyReview", label: "Anomaly Review", x: 560, y: 180 }
+];
+
+const svg = document.querySelector("svg");
+const startBtn = document.getElementById("startBtn");
+const nextStepBtn = document.getElementById("nextStepBtn");
+const resetBtn = document.getElementById("resetBtn");
+const workflowInfo = document.getElementById("workflowInfo");
+
+let currentStageIndex = -1;
+
+function drawWorkflow() {
+  svg.innerHTML = "";
+
+  // Arrows between stages
+  for(let i=0; i < stages.length-1; i++) {
+    const start = stages[i];
+    const end = stages[i+1];
+
+    const arrow = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    arrow.setAttribute("x1", start.x + 120);
+    arrow.setAttribute("y1", start.y + 40);
+    arrow.setAttribute("x2", end.x);
+    arrow.setAttribute("y2", end.y + 40);
+    arrow.setAttribute("stroke", "#888");
+    arrow.setAttribute("stroke-width", "3");
+    arrow.setAttribute("marker-end", "url(#arrowhead)");
+    svg.appendChild(arrow);
+  }
+
+  // Arrowhead marker definition
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  marker.setAttribute("id", "arrowhead");
+  marker.setAttribute("markerWidth", "10");
+  marker.setAttribute("markerHeight", "7");
+  marker.setAttribute("refX", "0");
+  marker.setAttribute("refY", "3.5");
+  marker.setAttribute("orient", "auto");
+  const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+  polygon.setAttribute("fill", "#888");
+  marker.appendChild(polygon);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // Draw stage rectangles and labels
+  stages.forEach((stage, i) => {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", stage.x);
+    rect.setAttribute("y", stage.y);
+    rect.setAttribute("width", 120);
+    rect.setAttribute("height", 80);
+    rect.setAttribute("rx", 10);
+    rect.setAttribute("class", "node");
+
+    if (i === currentStageIndex) {
+      rect.classList.add("active");
+    } else if (i < currentStageIndex) {
+      rect.classList.add("completed");
+    }
+
+    svg.appendChild(rect);
+
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", stage.x + 60);
+    text.setAttribute("y", stage.y + 45);
+    text.setAttribute("class", "label");
+    text.setAttribute("text-anchor", "middle");
+    text.textContent = stage.label;
+    svg.appendChild(text);
+  });
+}
+
+function updateWorkflowInfo() {
+  if(currentStageIndex === -1) {
+    workflowInfo.innerHTML = "Workflow Status: <em>Not started</em>";
+  } else if(currentStageIndex < stages.length) {
+    workflowInfo.innerHTML = `Workflow Status: <strong>${stages[currentStageIndex].label}</strong>`;
+  } else {
+    workflowInfo.innerHTML = "Workflow Status: <strong>Completed</strong>";
+  }
+}
+
+function startWorkflow() {
+  currentStageIndex = 0;
+  startBtn.disabled = true;
+  nextStepBtn.disabled = false;
+  resetBtn.disabled = false;
+  drawWorkflow();
+  updateWorkflowInfo();
+}
+
+function nextStep() {
+  if(currentStageIndex < stages.length - 1) {
+    currentStageIndex++;
+    drawWorkflow();
+    updateWorkflowInfo();
+  } else {
+    currentStageIndex++;
+    drawWorkflow();
+    updateWorkflowInfo();
+    alert("Digital Receipt and Reconciliation Workflow Completed.");
+    nextStepBtn.disabled = true;
+  }
+}
+
+function resetWorkflow() {
+  currentStageIndex = -1;
+  startBtn.disabled = false;
+  nextStepBtn.disabled = true;
+  resetBtn.disabled = true;
+  drawWorkflow();
+  updateWorkflowInfo();
+}
+
+startBtn.addEventListener("click", startWorkflow);
+nextStepBtn.addEventListener("click", nextStep);
+resetBtn.addEventListener("click", resetWorkflow);
+
+drawWorkflow();
+updateWorkflowInfo();
+</script>
+
+</body>
+</html>

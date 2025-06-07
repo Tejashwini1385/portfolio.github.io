@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Walmart Checkout Line Monitoring - Sliding Window Min Visualization</title>
+<script src="https://cdn.lordicon.com/lordicon.js"></script>
+<style>
+  body {
+    background: #0f0c29;
+    color: #f0f0f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px 25px 50px;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+   h2, h3 {
+    color: #00f0ff;
+    border-bottom: 2px solid #00e6e6;
+  }
+  h1 { color: #00f0ff;text-align: center; margin-bottom: 30px; }
+  .section {
+    max-width: 900px;
+    margin: 0 auto 50px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 40px;
+  }
+  .code-block {
+    background: #1e1e2f;
+    color: #00ffcc;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.15rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin-bottom: 20px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 700px;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #00f0ff;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  th {
+    background-color: #003f4d;
+  }
+  tbody tr.current-step {
+    background-color: #004c4c;
+    font-weight: bold;
+    color: #00ffcc;
+  }
+  .complexity {
+    color: #aaa;
+    font-style: italic;
+    max-width: 900px;
+  }
+  .impact {
+    max-width: 900px;
+    font-size: 1.1rem;
+    margin-top: 20px;
+  }
+  .references {
+    font-size: 1rem;
+    color: #aaa;
+    max-width: 900px;
+    margin: 40px auto 80px;
+  }
+  .references ul {
+    padding-left: 20px;
+  }
+  .references li {
+    margin-bottom: 8px;
+  }
+  .references a {
+    color: #00aaff;
+    text-decoration: none;
+  }
+  .references a:hover {
+    text-decoration: underline;
+  }
+  .dp-visualization {
+    margin-top: 30px;
+  }
+  .dp-visualization table {
+    font-size: 1.1rem;
+  }
+  .queue-value {
+    color: #00ffcc;
+  }
+</style>
+</head>
+<body>
+
+<h1>7.Walmart Checkout Line Monitoring</h1>
+
+<div class="section">
+  <h2>Description</h2>
+  <p>
+    Walmart needs to monitor the number of customers waiting in checkout lines continuously. By analyzing queue lengths every minute, the store can quickly respond to fluctuating demand by opening or closing checkout counters.
+  </p>
+  <p>
+    The <strong>Sliding Window Minimum</strong> algorithm helps track the minimum queue length over recent time windows (e.g., last 3 minutes). This information identifies periods of low congestion, enabling efficient staff allocation without unnecessary idle counters.
+  </p>
+</div>
+
+<div class="section">
+  <h2>Realistic Queue Length Data Sample (per minute)</h2>
+  <p>
+    The following data represents the number of customers waiting in a single checkout line, sampled every minute during a busy afternoon.
+  </p>
+  <p><strong>Queue lengths:</strong> <span id="queueDataSpan"></span></p>
+</div>
+
+<div class="section">
+  <h2>Sliding Window Minimum Algorithm (Java Code)</h2>
+  <div class="code-block">
+<pre>
+public int[] slidingWindowMin(int[] queueLengths, int k) {
+    int n = queueLengths.length;
+    int[] result = new int[n - k + 1];
+    PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+    for (int i = 0; i < n; i++) {
+        minHeap.offer(queueLengths[i]);
+        if (i >= k) minHeap.remove(queueLengths[i - k]);
+        if (i >= k - 1) result[i - k + 1] = minHeap.peek();
+    }
+    return result;
+}
+</pre>
+  </div>
+  <table style="margin: 0 auto; border-collapse: collapse; width: 60%; text-align: center;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #00e5ff; padding: 10px; color: #00f0ff;">Metric</th>
+      <th style="border: 1px solid #00e5ff; padding: 10px; color: #00f0ff;">Complexity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #00e5ff; padding: 10px;">Time Complexity</td>
+      <td style="border: 1px solid #00e5ff; padding: 10px;">O(n log k)</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #00e5ff; padding: 10px;">Space Complexity</td>
+      <td style="border: 1px solid #00e5ff; padding: 10px;">O(k)</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
+<div class="section dp-visualization">
+  <h2>Automatic Sliding Window Minimum DP Table Visualization</h2>
+  <p>
+    This table shows how the algorithm updates the sliding window every minute:
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Minute</th>
+        <th>Queue Length</th>
+        <th>Window Customers (Min Heap Contents)</th>
+        <th>Sliding Window Min Queue</th>
+      </tr>
+    </thead>
+    <tbody id="dpTableBody">
+      <!-- rows dynamically generated -->
+    </tbody>
+  </table>
+</div>
+
+
+<!-- Include Lordicon Library -->
+<script src="https://cdn.lordicon.com/lordicon.js"></script>
+
+<!-- Flow Container -->
+<div class="flow-container">
+  <!-- Step 1: Customers Queueing -->
+  <div class="step">
+    <lord-icon
+        src="https://cdn.lordicon.com/dxjqoygy.json"
+        trigger="loop"
+        delay="500"
+        colors="primary:#00f0ff,secondary:#ffffff"
+        style="width:80px;height:80px">
+    </lord-icon>
+    <p>Customers Queueing</p>
+  </div>
+
+  <div class="arrow">➡️</div>
+<!-- Step 2: Queue Detection System -->
+<div class="step">
+  <lord-icon
+      src="https://cdn.lordicon.com/zpxybbhl.json"
+      trigger="loop"
+      delay="750"
+      colors="primary:#00f0ff,secondary:#ffffff"
+      style="width:80px;height:80px">
+  </lord-icon>
+  <p>Queue Detection System</p>
+</div>
+
+
+
+
+
+  <div class="arrow">➡️</div>
+
+  <!-- Step 3: Analytics Engine -->
+  <div class="step">
+    <lord-icon
+        src="https://cdn.lordicon.com/gqzfzudq.json"
+        trigger="loop"
+        delay="600"
+        colors="primary:#00f0ff,secondary:#ffffff"
+        style="width:80px;height:80px">
+    </lord-icon>
+    <p>Analytics Engine</p>
+  </div>
+
+  <div class="arrow">➡️</div>
+
+  <!-- Step 4: Manager Dashboard -->
+  <div class="step">
+    <lord-icon
+       src="https://cdn.lordicon.com/mecwbjnp.json"
+        trigger="loop"
+        delay="600"
+        colors="primary:#00f0ff,secondary:#ffffff"
+        style="width:80px;height:80px">
+    </lord-icon>
+    <p>Manager Dashboard</p>
+  </div>
+
+  <div class="arrow">➡️</div>
+
+  <!-- Step 5: Staff Allocation -->
+  <div class="step">
+    <lord-icon
+        src="https://cdn.lordicon.com/zzcjjxew.json"
+        trigger="loop"
+        delay="800"
+        colors="primary:#00f0ff,secondary:#ffffff"
+        style="width:80px;height:80px">
+    </lord-icon>
+    <p>Staff Allocation</p>
+  </div>
+</div>
+
+<!-- CSS Styles -->
+<style>
+.flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 130px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #00ffcc;
+}
+
+.arrow {
+  font-size: 2rem;
+  margin: 0 10px;
+  color: #ffffff;
+}
+</style>
+
+<script src="https://cdn.lordicon.com/lordicon.js"></script>
+
+
+<div class="section impact">
+  <h2>Expected Business Impact</h2>
+  <p>
+    By tracking the minimum queue length over short intervals, Walmart store managers can make informed decisions:
+  </p>
+  <ul>
+    <li>Detect periods when checkout lines are minimally occupied, avoiding overstaffing.</li>
+    <li>Allocate resources dynamically to maintain optimal customer service levels.</li>
+    <li>Reduce customer wait times and improve shopping experience.</li>
+  </ul>
+</div>
+
+<div class="references">
+  <h2>References</h2>
+  <ul>
+    <li><a href="https://leetcode.com/problems/sliding-window-minimum/" target="_blank" rel="noopener">Sliding Window Minimum - LeetCode</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Exponential_smoothing" target="_blank" rel="noopener">Exponential Smoothing - Wikipedia</a></li>
+    <li><a href="https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/" target="_blank" rel="noopener">Sliding Window Algorithms - GeeksforGeeks</a></li>
+  </ul>
+  <div style="text-align: center; margin: 30px 0;">
+  
+</div>
+  
+</div>
+<style>
+    .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+  </style>
+  <div class="nav-buttons">
+  <a href="product-locator.html" title="Previous Case"> Previous Case</a>
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  <a href="price-trend.html" title="Previous Case">Next Case Case</a>
+</div>
+<script>
+  const queueData = [8, 7, 9, 10, 6, 5, 4, 7, 8, 6];
+  const k = 3;
+  const n = queueData.length;
+  const dpTableBody = document.getElementById('dpTableBody');
+  document.getElementById('queueDataSpan').textContent = queueData.join(', ');
+  let heapWindow = [];
+
+  function initTable() {
+    dpTableBody.innerHTML = '';
+    for(let i=0; i<n; i++) {
+      const row = document.createElement('tr');
+      row.id = `row-${i}`;
+
+      const minuteCell = document.createElement('td');
+      minuteCell.textContent = i + 1;
+      row.appendChild(minuteCell);
+
+      const qlenCell = document.createElement('td');
+      qlenCell.textContent = queueData[i];
+      qlenCell.classList.add('queue-value');
+      row.appendChild(qlenCell);
+
+      const heapCell = document.createElement('td');
+      heapCell.textContent = '-';
+      row.appendChild(heapCell);
+
+      const minCell = document.createElement('td');
+      minCell.textContent = (i >= k - 1) ? '-' : '';
+      row.appendChild(minCell);
+
+      dpTableBody.appendChild(row);
+    }
+  }
+
+  function heapInsert(val) {
+    heapWindow.push(val);
+    heapWindow.sort((a,b) => a-b);
+  }
+
+  function heapRemove(val) {
+    const idx = heapWindow.indexOf(val);
+    if (idx !== -1) heapWindow.splice(idx, 1);
+  }
+
+  let currentStep = 0;
+
+  function updateStep(step) {
+    for(let i=0; i<n; i++) {
+      document.getElementById(`row-${i}`).classList.remove('current-step');
+    }
+
+    const row = document.getElementById(`row-${step}`);
+    row.classList.add('current-step');
+
+    heapInsert(queueData[step]);
+
+    if (step >= k) {
+      heapRemove(queueData[step - k]);
+    }
+
+    row.children[2].textContent = '[' + heapWindow.join(', ') + ']';
+
+    if (step >= k - 1) {
+      row.children[3].textContent = heapWindow[0];
+    } else {
+      row.children[3].textContent = '-';
+    }
+  }
+
+  function loopAnimation() {
+    updateStep(currentStep);
+    currentStep++;
+    if (currentStep === n) {
+      setTimeout(() => {
+        currentStep = 0;
+        heapWindow = [];
+        for(let i=0; i<n; i++) {
+          const row = document.getElementById(`row-${i}`);
+          row.classList.remove('current-step');
+          row.children[2].textContent = '-';
+          row.children[3].textContent = (i >= k - 1) ? '-' : '';
+        }
+      }, 3000);
+    }
+  }
+
+  initTable();
+  setInterval(() => {
+    if (currentStep < n) {
+      loopAnimation();
+    }
+  }, 2000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Walmart Checkout Prioritization</title>
+  <style>
+    body {
+    background: #0f0c29;
+    color: #d0e8ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 25px auto 60px;
+    max-width: 900px;
+    font-size: 18px;
+    line-height: 1.6;
+    height: 100%;    /* or 100% */
+    overflow-y: auto;
+  }
+    h1 {
+      text-align: center;
+      color: #00e5ff;
+    }
+    .description, .complexity, .references {
+      background: #1c1f2b;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px auto;
+      max-width: 800px;
+    }
+    .container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      gap: 50px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #00e5ff;
+      padding: 10px;
+      text-align: center;
+    }
+    .heap-tree svg {
+      width: 100%;
+      height: 300px;
+    }
+    .heap-node {
+      fill: #2196f3;
+      stroke: #42a5f5;
+      stroke-width: 2;
+    }
+    .heap-label {
+      fill: white;
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+     h2, h3 { color: #00f0ff; border-bottom: 2px solid #00e6e6;}
+    h1 { color: #00f0ff;text-align: center; margin-bottom: 32px; }
+    .section {
+    max-width: 900px;
+    margin: 0 auto 50px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 40px;
+  }
+.references {
+      font-size: 1rem;
+      color: #aaa;
+      max-width: 850px;
+      margin: 40px auto 80px;
+    }
+
+    .references ul {
+      padding-left: 20px;
+    }
+
+    .references li {
+      margin-bottom: 8px;
+    }
+
+    .references a {
+      color: #00aaff;
+      text-decoration: none;
+    }
+
+    .references a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+  <h1> 4. Express Checkout Prioritization</h1>
+
+  <div class="section">
+  <h2> Description</h2>
+  <p>
+    Walmart enhances checkout speed by prioritizing customers in express lanes using a dynamic scoring system based on membership, cart size, wait time, and lane type.
+  </p>
+
+  
+
+  
+  <h3> Key Challenges Tackled</h3>
+  <ul>
+    <li> Real-time recalculation of priorities every minute</li>
+    <li> Fairness vs. speed during peak traffic (e.g., Black Friday)</li>
+    <li> Syncing heaps across multiple checkout counters</li>
+    <li> Preventing starvation for lower-priority customers</li>
+  </ul>
+
+
+
+<h3> Priority Score Formula</h3>
+  <ul>
+    <li>+30 points for Walmart+ membership</li>
+    <li>+20 points for Express lane</li>
+    <li>+1 point for each minute waited</li>
+    <li>-1 point per item (fewer items = higher priority)</li>
+  </ul>
+  </div>
+
+  <section class="container">
+    <div class="queue-column">
+      <h2>Priority Queue (Sorted)</h2>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Items</th><th>Wait (m)</th><th>Express</th><th>Member</th><th>Priority</th></tr>
+        </thead>
+        <tbody id="queue"></tbody>
+      </table>
+    </div>
+    <div class="heap-tree">
+      <h2>Binary Heap (Visual)</h2>
+      <svg id="heap-tree"></svg>
+    </div>
+  </section>
+
+  <section class="complexity">
+    <h2>Complexity Analysis</h2>
+    <table>
+      <thead>
+        <tr><th>Operation</th><th>Time Complexity</th><th>Space Complexity</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Insert Customer</td><td>O(log n)</td><td>O(n)</td></tr>
+        <tr><td>Find Max Priority</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Display Heap</td><td>O(n)</td><td>O(n)</td></tr>
+      </tbody>
+    </table>
+ 
+
+  <div class="references" style="color: #00aaff; width: 60%; margin: auto;">
+    <h2>References</h2>
+    <ul>
+      <li><a href="https://en.wikipedia.org/wiki/Binary_heap" target="_blank">Binary Heap - Wikipedia</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">MDN Web Docs: JavaScript</a></li>
+    </ul>
+</div>
+
+ 
+    <script>
+/* ---------- DATA MODELS ---------- */
+class Customer {
+  constructor(name, items, waitTime, isExpress, isMember) {
+    this.name = name;
+    this.items = items;
+    this.waitTime = waitTime;
+    this.isExpress = isExpress;
+    this.isMember = isMember;
+  }
+  getPriority() {
+    let score = 0;
+    if (this.isMember)  score += 30;
+    if (this.isExpress) score += 20;
+    score += this.waitTime;
+    score -= this.items;          // fewer items → higher score
+    return score;
+  }
+}
+class PriorityQueue {
+  constructor() { this.heap = []; }
+  /* --- heap ops --- */
+  insert(c){ this.heap.push(c); this._up(this.heap.length-1); }
+  remove(){                // pop-max (root)
+    if (!this.heap.length) return null;
+    const top = this.heap[0];
+    const end = this.heap.pop();
+    if (this.heap.length){ this.heap[0] = end; this._down(0); }
+    return top;
+  }
+  _up(i){
+    while (i>0){
+      const p = Math.floor((i-1)/2);
+      if (this.heap[p].getPriority() >= this.heap[i].getPriority()) break;
+      [this.heap[p], this.heap[i]] = [this.heap[i], this.heap[p]];
+      i = p;
+    }
+  }
+  _down(i){
+    const n=this.heap.length;
+    while(true){
+      let l=2*i+1, r=2*i+2, largest=i;
+      if(l<n && this.heap[l].getPriority() > this.heap[largest].getPriority()) largest=l;
+      if(r<n && this.heap[r].getPriority() > this.heap[largest].getPriority()) largest=r;
+      if(largest===i) break;
+      [this.heap[i], this.heap[largest]] = [this.heap[largest], this.heap[i]];
+      i = largest;
+    }
+  }
+  isEmpty(){ return this.heap.length===0; }
+  getSorted(){ return [...this.heap].sort((a,b)=>b.getPriority()-a.getPriority()); }
+}
+
+/* ---------- INITIAL DATA ---------- */
+const ORIGINAL = [
+  new Customer("Alice", 5, 3,  true,  true ),
+  new Customer("Bob",   20, 5, false, false),
+  new Customer("Carol", 8,10,  true, false),
+  new Customer("Dave",  2, 1,  true,  true ),
+  new Customer("Eve",  15, 8, false,  true )
+];
+
+/* ---------- RENDERING ---------- */
+const pq        = new PriorityQueue();
+const tbody     = document.getElementById("queue");
+const svg       = document.getElementById("heap-tree");
+
+function renderQueue(){
+  tbody.innerHTML = "";
+  pq.getSorted().forEach(c=>{
+    tbody.insertAdjacentHTML("beforeend",
+      `<tr><td>${c.name}</td><td>${c.items}</td><td>${c.waitTime}</td><td>${c.isExpress?'Yes':'No'}</td><td>${c.isMember?'Yes':'No'}</td><td>${c.getPriority()}</td></tr>`);
+  });
+}
+function renderHeap(){
+  svg.innerHTML="";
+  const W = svg.clientWidth, Hstep = 70, R = 20;
+  const xy = idx=>{
+    const lvl = Math.floor(Math.log2(idx+1));
+    const pos = idx - ((1<<lvl)-1);
+    const slots = 1<<lvl;
+    return {x:(W/(slots+1))*(pos+1), y:30+lvl*Hstep};
+  };
+  pq.heap.forEach((c,i)=>{
+    const {x,y}=xy(i);
+    if(i>0){
+      const {x:px,y:py}=xy(Math.floor((i-1)/2));
+      svg.insertAdjacentHTML("beforeend",
+        `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#00e5ff"/>`);
+    }
+    svg.insertAdjacentHTML("beforeend",
+      `<circle cx="${x}" cy="${y}" r="${R}" class="heap-node"></circle>
+       <text x="${x}"  y="${y}" class="heap-label">${c.getPriority()}</text>`);
+  });
+}
+
+/* ---------- DEMO LOOP ---------- */
+let phase = "enqueue";            // 'enqueue' | 'dequeue'
+let pending = [...ORIGINAL];      // customers left to enqueue
+
+function tick(){
+  if(phase==="enqueue"){
+    if(pending.length){
+      pq.insert(pending.shift());
+    }else{
+      phase="dequeue";
+    }
+  }else{                          // dequeue
+    if(!pq.isEmpty()){
+      pq.remove();
+    }else{
+      phase="enqueue";
+      pending = [...ORIGINAL];    // restart
+    }
+  }
+  renderQueue();
+  renderHeap();
+}
+renderQueue(); renderHeap();      // initial empty view
+setInterval(tick, 2000);          // advance every 2 s
+</script>
+<style>
+    .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+  </style>
+  <div class="nav-buttons">
+  <a href="scan-and-go.html" title="Previous Case"> Previous Case</a>
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  <a href="order-batching.html" title="Previous Case">Next Case Case</a>
+</div>
+</body>
+</html>

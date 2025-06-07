@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>In-Store Product Locator | Tejashwini's Portfolio</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+  <style>
+    /* General styling */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0c29;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0 25px 50px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    #tsparticles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    h1 {
+      color: #00f0ff;
+      font-size: 2.8rem;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #00f0ff;
+      font-size: 2rem;
+      margin-top: 40px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #00f0ff;
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      color: #00e0ff;
+      font-size: 1.5rem;
+      margin-top: 25px;
+      margin-bottom: 10px;
+    }
+
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+      border-bottom: 1px solid #333;
+    }
+
+    p {
+      max-width: 850px;
+      margin-bottom: 20px;
+    }
+
+    .code-block {
+      background: #1e1e2f;
+      color: #00ffcc;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Source Code Pro', monospace, monospace;
+      font-size: 1.15rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.4;
+      user-select: text;
+      margin-bottom: 10px;
+    }
+
+    .complexity {
+      margin-top: 10px;
+      font-style: italic;
+      color: #aaa;
+      font-size: 1rem;
+      max-width: 850px;
+    }
+
+     /* Interactive trace container */
+
+    .trace-container {
+      background: #11172a;
+      border: 2px solid #00f0ff;
+      border-radius: 10px;
+      padding: 15px 20px;
+      max-width: 850px;
+      margin-top: 15px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      color: #00e0ff;
+      user-select: none;
+      min-height: 120px;
+      position: relative;
+    }
+
+    .trace-step {
+      display: none;
+    }
+
+    .trace-step.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* Navigation buttons */
+    .trace-nav {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .trace-nav button {
+      background-color: #00f0ff;
+      border: none;
+      color: #0f0c29;
+      font-weight: 700;
+      padding: 8px 18px;
+      margin: 0 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    .trace-nav button:disabled {
+      background-color: #004c4c;
+      cursor: default;
+    }
+
+    .trace-nav button:hover:not(:disabled) {
+      background-color: #00c0cc;
+    } 
+
+    /* References */
+    .references {
+      font-size: 1rem;
+      color: #aaa;
+      max-width: 850px;
+      margin: 40px auto 80px;
+    }
+
+    .references ul {
+      padding-left: 20px;
+    }
+
+    .references li {
+      margin-bottom: 8px;
+    }
+
+    .references a {
+      color: #00ffcc;
+      text-decoration: none;
+    }
+
+    .references a:hover {
+      text-decoration: underline;
+    }
+
+    /* Fade animation */
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+  </style>
+</head>
+<body>
+  <div id="tsparticles"></div>
+
+  <h1>6. In-Store Product Locator </h1>
+
+  <div class="section">
+    <h2> Description</h2>
+    <p>
+      In Walmart stores, helping customers find products quickly can enhance shopping experience. 
+      We can model the store layout as a graph, where nodes represent aisles/sections and edges represent walking paths with distances.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>1️⃣ Dijkstra’s Algorithm</h2>
+    <p>
+      Used for finding the shortest path from entrance to the product location.
+    </p>
+
+    <div class="code-block">
+<pre>
+import java.util.Arrays;
+
+public class DijkstraSimple {
+
+    static final int V = 6; 
+
+    
+    static int minDistance(int dist[], boolean sptSet[]) {
+        int min = Integer.MAX_VALUE, minIndex = -1;
+
+        for (int v = 0; v < V; v++) {
+            if (!sptSet[v] && dist[v] <= min) {
+                min = dist[v];
+                minIndex = v;
+            }
+        }
+
+        return minIndex;
+    }
+
+    
+    static void dijkstra(int graph[][], int src) {
+        int dist[] = new int[V];  // The output array. dist[i] will hold the shortest distance from src to i
+
+        boolean sptSet[] = new boolean[V]; 
+
+        
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        Arrays.fill(sptSet, false);
+
+        dist[src] = 0; // Distance from source to itself is always 0
+
+       
+        for (int count = 0; count < V - 1; count++) {
+            int u = minDistance(dist, sptSet); // Pick the minimum distance vertex not processed yet
+            sptSet[u] = true; // Mark the picked vertex as processed
+
+         
+            for (int v = 0; v < V; v++) {
+                // Update dist[v] only if not in sptSet, there is an edge from u to v,
+                // and total weight of path from src to v through u is smaller than current value of dist[v]
+                if (!sptSet[v] && graph[u][v] != 0 &&
+                    dist[u] != Integer.MAX_VALUE &&
+                    dist[u] + graph[u][v] < dist[v]) {
+
+                    dist[v] = dist[u] + graph[u][v];
+                }
+            }
+        }
+
+        printSolution(dist, src);
+    }
+
+   
+    static void printSolution(int dist[], int src) {
+        System.out.println("Vertex \t Distance from Source " + src);
+        for (int i = 0; i < V; i++)
+            System.out.println(i + " \t\t " + dist[i]);
+    }
+
+    public static void main(String[] args) {
+        int graph[][] = new int[][] {
+            //  A  B  C  D  E  F
+            { 0, 4, 2, 0, 0, 0 }, // A = 0
+            { 0, 0, 5, 10, 0, 0 }, // B = 1
+            { 0, 0, 0, 0, 3, 0 }, // C = 2
+            { 0, 0, 0, 0, 0, 11 }, // D = 3
+            { 0, 0, 0, 4, 0, 0 }, // E = 4
+            { 0, 0, 0, 0, 0, 0 }  // F = 5
+        };
+
+        dijkstra(graph, 0); 
+    }
+}
+
+</pre>
+    </div>
+
+    <p class="complexity">
+       Time: O((V + E) log V) | 💾 Space: O(V)
+    </p>
+
+    <h3>Tracing Demo: Dijkstra’s Algorithm</h3>
+    <p style="font-size: 0.9em; color: #ccc; margin-top: 10px;">
+  Image by 
+  <a href="https://commons.wikimedia.org/w/index.php?title=User:Ibmua&action=edit&redlink=1" target="_blank" rel="noopener noreferrer">
+    Ibmua
+  </a> – Work by uploader, Public Domain. 
+  <a href="https://commons.wikimedia.org/w/index.php?curid=6282617" target="_blank" rel="noopener noreferrer">
+    View on Wikimedia Commons
+  </a>.
+</p>
+
+
+<div class="trace-container" style="display: flex; max-width: 1200px; gap: 30px; margin: auto;">
+  <!-- Graph SVG container -->
+  <div id="graph-wrapper" style="flex: 2;">
+    <svg id="graph-svg" width="850" height="300" style="background:#11172a; border:2px solid #00f0ff; border-radius:10px; display:block; margin: auto;">
+      <!-- Nodes -->
+      <circle class="node" id="node-0" cx="100" cy="150" r="20" />
+      <text x="100" y="155" text-anchor="middle" fill="#00e0ff" font-weight="bold" font-size="18px">A</text>
+
+      <circle class="node" id="node-1" cx="250" cy="70" r="20" />
+      <text x="250" y="75" text-anchor="middle" fill="#00e0ff" font-weight="bold" font-size="18px">B</text>
+
+      <circle class="node" id="node-2" cx="250" cy="230" r="20" />
+      <text x="250" y="235" text-anchor="middle" fill="#00e0ff" font-weight="bold" font-size="18px">C</text>
+
+      <circle class="node" id="node-3" cx="450" cy="70" r="20" />
+      <text x="450" y="75" text-anchor="middle" fill="#00e0ff" font-weight="bold" font-size="18px">D</text>
+
+      <circle class="node" id="node-4" cx="450" cy="230" r="20" />
+      <text x="450" y="235" text-anchor="middle" fill="#00e0ff" font-weight="bold" font-size="18px">E</text>
+
+      <circle class="node" id="node-5" cx="650" cy="150" r="20" />
+      <text x="650" y="155" text-anchor="middle" fill="#00e0ff" font-weight="bold" font-size="18px">F</text>
+
+      <!-- Edges with weights -->
+      <line id="edge-0-1" x1="120" y1="140" x2="230" y2="85" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="175" y="70" fill="#00e0ff" font-size="16px">4</text>
+
+      <line id="edge-0-2" x1="120" y1="160" x2="230" y2="215" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="175" y="230" fill="#00e0ff" font-size="16px">2</text>
+
+      <line id="edge-1-2" x1="265" y1="90" x2="265" y2="210" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="280" y="150" fill="#00e0ff" font-size="16px">5</text>
+
+      <line id="edge-1-3" x1="270" y1="80" x2="430" y2="80" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="350" y="65" fill="#00e0ff" font-size="16px">10</text>
+
+      <line id="edge-2-4" x1="270" y1="220" x2="430" y2="220" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="350" y="235" fill="#00e0ff" font-size="16px">3</text>
+
+      <line id="edge-3-5" x1="470" y1="80" x2="630" y2="140" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="560" y="70" fill="#00e0ff" font-size="16px">11</text>
+
+      <line id="edge-4-3" x1="430" y1="210" x2="470" y2="90" stroke="#004c4c" stroke-width="3" marker-end="url(#arrow)" />
+      <text x="450" y="150" fill="#00e0ff" font-size="16px">4</text>
+    </svg>
+
+    <div class="trace-step active" id="trace-text" style="margin-top: 15px; max-width: 850px;">
+      <strong>Step 1:</strong> Initialize distances to all nodes as Infinity except start node (A) with distance 0.
+    </div>
+
+    <div class="trace-nav" style="margin-top:15px; text-align:center;">
+      <button id="dijkstra-prev" disabled>← Previous</button>
+      <button id="dijkstra-next">Next →</button>
+    </div>
+  </div>
+
+
+
+  <!-- Table container -->
+  <div id="distance-table-container" style="flex: 1; background:#11172a; border: 2px solid #00f0ff; border-radius:10px; padding:15px; color:#00e0ff; font-family: monospace;">
+    <h4>Node & Distances </h4>
+    <table id="distance-table" style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 1px solid #00f0ff;">
+          <th style="text-align:left; padding: 5px;">Node</th>
+          <th style="text-align:right; padding: 5px;">Distance</th>
+          <!-- <th style="text-align:center; padding: 5px;">Prev Vertex</th> -->
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows dynamically added here -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  /* Interactive trace container */
+  .trace-container {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    user-select: none;
+    position: relative;
+  }
+
+  .trace-step {
+    animation: fadeIn 0.5s ease;
+  }
+
+  /* Navigation buttons */
+  .trace-nav button {
+    background-color: #00f0ff;
+    border: none;
+    color: #0f0c29;
+    font-weight: 700;
+    padding: 8px 18px;
+    margin: 0 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+
+  .trace-nav button:disabled {
+    background-color: #004c4c;
+    cursor: default;
+  }
+
+  .trace-nav button:hover:not(:disabled) {
+    background-color: #00c0cc;
+  }
+
+  /* Graph styling */
+  .node {
+    fill: #002233;
+    stroke: #00e0ff;
+    stroke-width: 3px;
+    transition: fill 0.3s ease, stroke 0.3s ease;
+  }
+
+  .node.active {
+    fill: #00e0ff;
+    stroke: #00a0cc;
+  }
+
+  .node.processed {
+    fill: #008080;
+    stroke: #004c4c;
+  }
+
+  line {
+    transition: stroke 0.3s ease, stroke-width 0.3s ease;
+  }
+
+  line.active {
+    stroke: #00e0ff;
+    stroke-width: 5;
+  }
+
+  /* Arrow marker for directed edges */
+  marker#arrow {
+    fill: #00e0ff;
+  }
+
+  /* Table styles */
+  #distance-table th,
+  #distance-table td {
+    border-bottom: 1px solid #003344;
+  }
+
+  #distance-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Status colors */
+  .status-active {
+    color: #00f0ff;
+    font-weight: bold;
+  }
+
+  .status-processed {
+    color: #00a090;
+  }
+
+  .status-unvisited {
+    color: #555555;
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }
+</style>
+
+<script>
+  // Define the nodes and initial distances and status
+  const nodes = ['A', 'B', 'C', 'D', 'E', 'F'];
+  const INF = Infinity;
+
+  // Initialize distances for each step based on the algorithm trace info
+  // We'll simulate the distances changing step by step
+  // Distances array: at each step, map node index -> distance (number or Infinity)
+  // We'll update distances according to the known Dijkstra progress for this graph.
+
+  // To keep it simpler, here are distances snapshots per step:
+  const distancesPerStep = [
+    [0, INF, INF, INF, INF, INF],                // step 1: init
+    [0, INF, INF, INF, INF, INF],                // step 2: insert A to queue
+    [0, INF, INF, INF, INF, INF],                // step 3: extract A
+    [0, 4, 2, INF, INF, INF],                    // step 4: update B=4, C=2
+    [0, 4, 2, INF, INF, INF],                    // step 5: push B and C
+    [0, 4, 2, INF, INF, INF],                    // step 6: extract C
+    [0, 4, 2, INF, 5, INF],                      // step 7: update E=5
+    [0, 4, 2, INF, 5, INF],                      // step 8: push E
+    [0, 4, 2, INF, 5, INF],                      // step 9: extract B
+    [0, 4, 2, 14, 5, INF],                       // step 10: update D=14
+    [0, 4, 2, 14, 5, INF],                       // step 11: push D
+    [0, 4, 2, 14, 5, INF],                       // step 12: extract E
+    [0, 4, 2, 9, 5, INF],                        // step 13: update D=9 (better)
+    [0, 4, 2, 9, 5, INF],                        // step 14: push D
+    [0, 4, 2, 9, 5, INF],                        // step 15: extract D
+    [0, 4, 2, 9, 5, 20],                         // step 16: update F=20
+    [0, 4, 2, 9, 5, 20],                         // step 17: push F
+    [0, 4, 2, 9, 5, 20],                         // step 18: extract F
+    [0, 4, 2, 9, 5, 20]                          // step 19: done
+  ];
+
+  // Status per node per step:
+  // active nodes are those highlighted in step.highlightNodes
+  // processed nodes are those highlighted in past steps but not active now
+  // unvisited otherwise
+
+  // Store the steps as in your original script for reference
+  const steps = [
+    {
+      text: "Initialize distances to all nodes as Infinity except start node (A) with distance 0.",
+      highlightNodes: [0],
+      highlightEdges: []
+    },
+    {
+      text: "Insert start node (A) into the priority queue.",
+      highlightNodes: [0],
+      highlightEdges: []
+    },
+    {
+      text: "Extract node with smallest distance from queue: node A.",
+      highlightNodes: [0],
+      highlightEdges: []
+    },
+    {
+      text: "Update distances to neighbors of node A (B and C). Distances: B=4, C=2.",
+      highlightNodes: [0, 1, 2],
+      highlightEdges: ["edge-0-1", "edge-0-2"]
+    },
+    {
+      text: "Push updated neighbors B and C into the priority queue.",
+      highlightNodes: [1, 2],
+      highlightEdges: []
+    },
+    {
+      text: "Extract node with smallest distance from queue: node C.",
+      highlightNodes: [2],
+      highlightEdges: []
+    },
+    {
+      text: "Update distances to neighbors of C (E). Distance E = 2 + 3 = 5.",
+      highlightNodes: [2, 4],
+      highlightEdges: ["edge-2-4"]
+    },
+    {
+      text: "Push updated neighbor E into the priority queue.",
+      highlightNodes: [4],
+      highlightEdges: []
+    },
+    {
+      text: "Extract node with smallest distance from queue: node B.",
+      highlightNodes: [1],
+      highlightEdges: []
+    },
+    {
+      text: "Update distances to neighbors of B (C and D). C is already closer, update distance to D = 4 + 10 = 14.",
+      highlightNodes: [1, 3],
+      highlightEdges: ["edge-1-3"]
+    },
+    {
+      text: "Push updated neighbor D into the priority queue.",
+      highlightNodes: [3],
+      highlightEdges: []
+    },
+    {
+      text: "Extract node with smallest distance from queue: node E.",
+      highlightNodes: [4],
+      highlightEdges: []
+    },
+    {
+      text: "Update distances to neighbors of E (D). New distance to D = min(14, 5 + 4) = 9.",
+      highlightNodes: [4, 3],
+      highlightEdges: ["edge-4-3"]
+    },
+    {
+      text: "Update D's distance to 9 and push into the priority queue.",
+      highlightNodes: [3],
+      highlightEdges: []
+    },
+    {
+      text: "Extract node with smallest distance from queue: node D.",
+      highlightNodes: [3],
+      highlightEdges: []
+    },
+    {
+      text: "Update distances to neighbors of D (F). Distance F = 9 + 11 = 20.",
+      highlightNodes: [3, 5],
+      highlightEdges: ["edge-3-5"]
+    },
+    {
+      text: "Push updated neighbor F into the priority queue.",
+      highlightNodes: [5],
+      highlightEdges: []
+    },
+    {
+      text: "Extract node with smallest distance from queue: node F.",
+      highlightNodes: [5],
+      highlightEdges: []
+    },
+    {
+      text: "Queue empty, algorithm ends. Final shortest distances found.",
+      highlightNodes: [],
+      highlightEdges: []
+    }
+  ];
+
+  let currentStep = 0;
+  const traceText = document.getElementById("trace-text");
+  const prevBtn = document.getElementById("dijkstra-prev");
+  const nextBtn = document.getElementById("dijkstra-next");
+  const tbody = document.querySelector("#distance-table tbody");
+
+  // Clear graph highlights (nodes and edges)
+  function clearHighlights() {
+    document.querySelectorAll(".node").forEach(n => {
+      n.classList.remove("active");
+      n.classList.remove("processed");
+    });
+    document.querySelectorAll("line").forEach(l => {
+      l.classList.remove("active");
+    });
+  }
+
+  function renderDistanceTable() {
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < nodes.length; i++) {
+    const nodeName = nodes[i];
+    const distVal = distancesPerStep[currentStep][i];
+    const distStr = distVal === INF ? "∞" : distVal;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="padding:5px;">${nodeName}</td>
+      <td style="padding:5px; text-align:right;">${distStr}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+
+  // Update the step: text, graph highlights, and table
+  function updateStep() {
+    clearHighlights();
+
+    const step = steps[currentStep];
+    traceText.innerHTML = `<strong>Step ${currentStep + 1}:</strong> ${step.text}`;
+
+    // Highlight nodes
+    step.highlightNodes.forEach(i => {
+      const node = document.getElementById("node-" + i);
+      if (node) {
+        node.classList.add("active");
+      }
+    });
+
+    // Highlight edges
+    step.highlightEdges.forEach(id => {
+      const edge = document.getElementById(id);
+      if (edge) {
+        edge.classList.add("active");
+      }
+    });
+
+    // Mark nodes processed in previous steps
+    for(let i=0; i < currentStep; i++) {
+      let pastNodes = steps[i].highlightNodes;
+      pastNodes.forEach(idx => {
+        // Only mark processed if not active in current step
+        if (!step.highlightNodes.includes(idx)) {
+          const node = document.getElementById("node-" + idx);
+          if (node) {
+            node.classList.add("processed");
+          }
+        }
+      });
+    }
+
+    // Update distance table
+    renderDistanceTable();
+
+    // Disable/enable buttons
+    prevBtn.disabled = currentStep === 0;
+    nextBtn.disabled = currentStep === steps.length - 1;
+  }
+
+  prevBtn.addEventListener("click", () => {
+    if(currentStep > 0) {
+      currentStep--;
+      updateStep();
+    }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if(currentStep < steps.length - 1) {
+      currentStep++;
+      updateStep();
+    }
+  });
+
+  // Initialize arrow marker for edges
+  const svg = document.getElementById("graph-svg");
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  marker.setAttribute("id", "arrow");
+  marker.setAttribute("markerWidth", "10");
+  marker.setAttribute("markerHeight", "10");
+  marker.setAttribute("refX", "10");
+  marker.setAttribute("refY", "3");
+  marker.setAttribute("orient", "auto");
+  marker.setAttribute("markerUnits", "strokeWidth");
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M0,0 L0,6 L9,3 z");
+  path.setAttribute("fill", "#00e0ff");
+
+  marker.appendChild(path);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // Initial update
+  updateStep();
+</script>
+
+
+ <div class="section">
+  <h2>2️⃣ A* Search Algorithm</h2>
+
+  <!-- Use Case Description -->
+  <p>
+    🛒 <strong>Use Case:</strong> A* Search helps optimize the shortest in-store path from a customer’s location to a product shelf by using estimated aisle distances (heuristics). This enables faster navigation and efficient restocking, especially in large stores like Walmart.
+  </p>
+
+  <!-- Java Code -->
+  <div class="code-block">
+<pre><code class="language-java">
+// A* Pathfinding in a 2D grid
+class Node {
+    int x, y, g, h;
+    Node parent;
+    int f() { return g + h; }
+}
+
+PriorityQueue<Node> openSet = new PriorityQueue<>((a, b) -> a.f() - b.f());
+Set<Node> closedSet = new HashSet<>();
+
+openSet.add(start);
+while (!openSet.isEmpty()) {
+    Node current = openSet.poll();
+    if (current.equals(goal)) return reconstructPath(current);
+
+    for (Node neighbor : getNeighbors(current)) {
+        int tentativeG = current.g + 1;
+        if (tentativeG < neighbor.g) {
+            neighbor.parent = current;
+            neighbor.g = tentativeG;
+            neighbor.h = heuristic(neighbor, goal);
+            openSet.add(neighbor);
+        }
+    }
+}
+</code></pre>
+  </div>
+  <!-- Tracing Demo -->
+  <h3 style="margin-top: 20px;">📊 Tracing Demo:</h3>
+  <div class="trace-container" id="astar-trace">
+    <table id="astar-trace-table" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+      <thead>
+        <tr style="background: #1c2333; color: #00e0ff;">
+          <th>Step</th><th>Current</th><th>Open Set</th><th>f(n)</th><th>Path</th>
+        </tr>
+      </thead>
+      <tbody id="astar-trace-body" style="color: #fff;">
+        <tr><td>1</td><td>A</td><td>[A]</td><td>f(A)=3</td><td>A</td></tr>
+        <tr><td>2</td><td>B</td><td>[C, D]</td><td>f(B)=4</td><td>A→B</td></tr>
+        <tr><td>3</td><td>C</td><td>[D]</td><td>f(C)=5</td><td>A→B→C</td></tr>
+        <tr><td>4</td><td>Goal</td><td>[]</td><td>f(Goal)=5</td><td>A→B→C→Goal</td></tr>
+      </tbody>
+    </table>
+
+    <div class="trace-nav" style="text-align:center; margin-top: 10px;">
+      <button id="astar-prev" onclick="navigateTrace(-1)">← Previous</button>
+      <button id="astar-next" onclick="navigateTrace(1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Complexity Table -->
+  <table style="margin-top: 10px; border-collapse: collapse; width: 100%; color: #fff; background: #11172a; border: 2px solid #00f0ff;">
+    <thead>
+      <tr style="background: #1c2333;">
+        <th style="padding: 8px;">Aspect</th>
+        <th style="padding: 8px;">Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding: 8px;">Time Complexity</td><td style="padding: 8px;">O(E)</td></tr>
+      <tr><td style="padding: 8px;">Space Complexity</td><td style="padding: 8px;">O(V)</td></tr>
+      <tr><td style="padding: 8px;">Heuristic Used</td><td style="padding: 8px;">Manhattan Distance (|x₁ - x₂| + |y₁ - y₂|)</td></tr>
+      <tr><td style="padding: 8px;">Application</td><td style="padding: 8px;">Smart Shelf Navigation</td></tr>
+    </tbody>
+  </table>
+
+  
+<div class="section">
+  <h3>🌳 Heuristic Search Tree (Example GIF):</h3>
+  <img src="https://www.cs.trincoll.edu/~ram/cpsc352/notes/gifs/tsp.gif" 
+       alt="TSP Heuristic Visualization" 
+       style="width: 100%; max-width: 600px; border: 2px solid #00f0ff; border-radius: 8px;" />
+  <p style="font-size: 0.9em; color: #aaa;">
+    Image source: 
+    <a href="https://www.cs.trincoll.edu/~ram/cpsc352/notes/heuristics.html" target="_blank" rel="noopener noreferrer">
+      Trinity College CS Heuristics Notes
+    </a>
+  </p>
+</div>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  let traceIndex = 0;
+  const traceRows = document.querySelectorAll("#astar-trace-body tr");
+
+  function updateTrace() {
+    traceRows.forEach((row, i) => {
+      row.classList.toggle("active", i === traceIndex);
+    });
+
+    document.getElementById("astar-prev").disabled = traceIndex === 0;
+    document.getElementById("astar-next").disabled = traceIndex === traceRows.length - 1;
+  }
+
+  window.navigateTrace = function (direction) {
+    traceIndex = Math.max(0, Math.min(traceRows.length - 1, traceIndex + direction));
+    updateTrace();
+  };
+
+  updateTrace();
+});
+</script>
+
+<style>
+  .trace-container tr.active {
+    background-color: #13283f;
+    font-weight: bold;
+  }
+
+  .trace-nav button {
+    background: #00f0ff;
+    color: #000;
+    padding: 8px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .trace-nav button:disabled {
+    background: #555;
+    cursor: not-allowed;
+  }
+</style>
+
+
+
+  <style>
+.section.references {
+  margin-top: 40px;
+  font-family: Arial, sans-serif;
+  color: #cce6ff; /* light blue */
+}
+
+.section.references h2 {
+  color: #00f0ff; /* bright cyan */
+  margin-bottom: 15px;
+}
+
+.section.references ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.section.references ul li {
+  margin-bottom: 8px;
+  font-size: 1.05em;
+  line-height: 1.4;
+}
+
+.section.references ul li a {
+  color: #00aaff;
+  text-decoration: none;
+}
+
+.btn-go-business {
+  background-color: #00f0ff;
+  color: #11172a;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: none;
+  box-shadow: 0 0 8px #00f0ff;
+  cursor: default; /* Always show default cursor, no pointer */
+  /* transition: background-color 0.3s ease, color 0.3s ease; */
+}
+
+.btn-go-business:hover{
+  background-color: #00c7ff;
+  color: #0a0f19;
+  box-shadow: 0 0 14px #00c7ff;
+}
+
+</style>
+
+<div class="section references">
+  <h2>📚 References</h2>
+  <ul>
+    
+    <li><a href="https://en.wikipedia.org/wiki/A*_search_algorithm" target="_blank" rel="noopener noreferrer">Wikipedia – A* Search Algorithm</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm" target="_blank" rel="noopener noreferrer">Wikipedia – Dijkstra’s Algorithm</a></li>
+    
+  </ul>
+</div>
+
+
+
+  <script>
+    // Particle background init
+    tsParticles.load("tsparticles", {
+      background: {
+        color: "#0f0c29"
+      },
+      particles: {
+        number: { value: 60 },
+        color: { value: "#00f0ff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5 },
+        size: { value: 3 },
+        move: { enable: true, speed: 1 }
+      },
+      interactivity: {
+        events: {
+          onhover: { enable: true, mode: "repulse" },
+        }
+      }
+    });
+
+    // Generic function to handle trace navigation
+    function setupTraceNavigation(traceId) {
+      const container = document.getElementById(traceId);
+      const steps = container.querySelectorAll('.trace-step');
+      const prevBtn = container.querySelector('button[id$="-prev"]');
+      const nextBtn = container.querySelector('button[id$="-next"]');
+      let current = 0;
+
+      function update() {
+        steps.forEach((step, i) => {
+          step.classList.toggle('active', i === current);
+        });
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current === steps.length - 1;
+      }
+
+      prevBtn.addEventListener('click', () => {
+        if (current > 0) {
+          current--;
+          update();
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (current < steps.length - 1) {
+          current++;
+          update();
+        }
+      });
+    }
+
+    // Setup navigation for all three traces
+    setupTraceNavigation('dijkstra-trace');
+    setupTraceNavigation('astar-trace');
+    setupTraceNavigation('bellman-trace');
+  </script>
+  <style>
+    .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+  </style>
+  <div class="nav-buttons">
+  <a href="order-batching.html" title="Previous Case"> Previous Case</a>
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  <a href="checkout-monitoring.html" title="Previous Case">Next Case Case</a>
+</div>
+</body>
+</html>

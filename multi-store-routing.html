@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Walmart Multi-Store Routing - KD Tree Nearest Store Lookup</title>
+<style>
+  body {
+    background: #0f0c29;
+    color: #d0e8ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 25px auto 60px;
+    max-width: 900px;
+    font-size: 18px;
+    line-height: 1.6;
+    height: 100%;    /* or 100% */
+    overflow-y: auto;
+  }
+   h1 {
+    color: #3be8ff;
+    
+    text-align: center;
+  }
+  h2, h3 {
+    color: #3be8ff;
+    border-bottom: 2px solid #00e6e6;
+    /* text-align: center; */
+  }
+  h1 { margin-bottom: 30px; }
+  .section {
+    margin-bottom: 50px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 30px;
+  }
+  canvas {
+  background: #16213e;
+  border-radius: 12px;
+  display: block;
+  margin: 20px auto;
+  box-shadow: 0 0 15px #3be8ff44;
+  max-width: 100%;
+  height: auto;
+}
+  .info-box {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #9fd3f0;
+  }
+  .highlight {
+    color: #3be8ff;
+    font-weight: bold;
+  }
+ table {
+  border-collapse: collapse;
+    margin: 20px auto;
+    width: 100%;
+    max-width: 600px;
+    background: var(--card);
+    border-radius: 8px;
+}
+  th, td {
+    border: 1px solid #3be8ff;
+    padding: 12px 15px;
+  }
+  th {
+    background-color: #0b2545;
+  }
+  tbody tr.highlight {
+    background-color: #1a5276;
+    font-weight: bold;
+  }
+  .complexity {
+    margin-top: 15px;
+    font-style: italic;
+    color: #9fd3f0;
+  }
+  .references {
+    margin-top: 40px;
+    font-size: 1rem;
+    color: #8fc1e3;
+  }
+  .references ul {
+    padding-left: 20px;
+  }
+  .references li {
+    margin-bottom: 8px;
+  }
+  .references a {
+    color: #00aaff;
+    text-decoration: none;
+  }
+  .references a:hover {
+    text-decoration: underline;
+  }
+  /* ── Side-by-side graph + table ───────────────────────────── */
+/* Wrap canvas + table */
+.kd-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+.kd-wrapper canvas {
+  flex: 0 0 60%;
+  background: #16213e;
+  border-radius: 12px;
+  box-shadow: 0 0 15px #3be8ff44;
+  max-width: 70%;
+  height: auto;
+}
+
+.kd-wrapper table {
+  flex: 0 0 38%;
+  max-height: 500px;
+  overflow-y: auto;
+  border-collapse: collapse;
+  font-size: 1rem;
+  color: #d0e8ff;
+}
+
+/* Responsive fallback */
+@media (max-width: 700px) {
+  .kd-wrapper {
+    flex-direction: column;
+  }
+
+  .kd-wrapper canvas,
+  .kd-wrapper table {
+    flex: none;
+    width: 100%;
+    margin: 0 auto 20px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<h1> 1.Walmart Multi-Store Routing </h1>
+<div class="section">
+  <h2> Description</h2>
+  <p>
+    Walmart uses <b>KD Trees</b> to quickly locate the nearest physical store for online orders,
+    store transfers, or delivery routing. By organizing store coordinates (latitude, longitude),
+    the system supports fast, scalable nearest-neighbour searches across thousands of locations.
+  </p>
+</div>
+
+<div class="section">
+  <h2> Challenges</h2>
+  <ul>
+    <li>Handling high-frequency geo-location queries in real-time.</li>
+    <li>Updating store nodes dynamically as availability changes.</li>
+    <li>Combining distance with real-world factors (traffic, delivery slots).</li>
+    <li>Maintaining accuracy despite GPS noise or overlapping regions.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2>Visualizing KD Tree Search for Nearest Store</h2>
+  <p>This visualization shows how a KD Tree organizes store locations and finds the nearest store to a customer query point step-by-step.</p>
+  <p>Blue circles = Stores, <span class="highlight">Red circle</span> = Customer, <span class="highlight">Yellow highlight</span> = Current visited node during search.</p>
+
+  
+
+  
+
+  <div class="kd-wrapper">
+  <canvas id="kdCanvas" width="800" height="500"></canvas>
+  <table>
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th>Action</th>
+        <th>Node (x, y)</th>
+        <th>Best Distance</th>
+      </tr>
+    </thead>
+    <tbody id="stepsTableBody"></tbody>
+  </table>
+</div>
+<div class="info-box">
+    <div>Step: <span id="stepNumber">0</span></div>
+    <div>Current Node Visited: <span id="currentNode">None</span></div>
+    <div>Best Distance So Far: <span id="bestDist">∞</span></div>
+    <div>Best Store Found: <span id="bestNode">None</span></div>
+  </div>
+
+<div class="section complexity">
+  <h3 style="text-align: center;">Time & Space Complexity</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Operation</th>
+        <th>Time Complexity</th>
+        <th>Space Complexity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Building KD Tree</td>
+        <td>O(N log N)</td>
+        <td rowspan="3">O(N)</td>
+      </tr>
+      <tr>
+        <td>Nearest Neighbor Query</td>
+        <td>Average: O(log N), Worst: O(N)</td>
+      </tr>
+      <tr>
+        <td>Space</td>
+        <td>-</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="references section">
+  <h2>References</h2>
+  <ul>
+    <li><a href="https://en.wikipedia.org/wiki/K-d_tree" target="_blank" rel="noopener">KD Tree - Wikipedia</a></li>
+    <li><a href="https://www.geeksforgeeks.org/k-dimensional-tree/" target="_blank" rel="noopener">KD Tree Tutorial - GeeksforGeeks</a></li>
+    <li><a href="https://www.redblobgames.com/articles/kdtree/" target="_blank" rel="noopener">Visualizing KD Trees - Red Blob Games</a></li>
+  </ul>
+</div>
+<style>
+    .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+  </style>
+  <div class="nav-buttons">
+  
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  <a href="wallet-balance.html" title="Previous Case">Next Case Case</a>
+</div>
+
+<script>
+// Sample store locations (x, y) - e.g. store coordinates in km
+const stores = [
+  { id: 'Store A', x: 2, y: 3 },
+  { id: 'Store B', x: 5, y: 4 },
+  { id: 'Store C', x: 9, y: 6 },
+  { id: 'Store D', x: 4, y: 7 },
+  { id: 'Store E', x: 8, y: 1 },
+  { id: 'Store F', x: 7, y: 2 }
+];
+
+// Customer query location
+const customer = { x: 9, y: 2 };
+
+// KD Tree Node constructor
+class KDNode {
+  constructor(point, axis) {
+    this.point = point;   // store object with id, x, y
+    this.left = null;
+    this.right = null;
+    this.axis = axis;     // 0 for x-axis, 1 for y-axis
+  }
+}
+
+// Build KD Tree recursively
+function buildKDTree(points, depth=0) {
+  if(points.length === 0) return null;
+  const axis = depth % 2;
+  points.sort((a,b) => (axis === 0 ? a.x - b.x : a.y - b.y));
+  const medianIndex = Math.floor(points.length / 2);
+  const node = new KDNode(points[medianIndex], axis);
+  node.left = buildKDTree(points.slice(0, medianIndex), depth + 1);
+  node.right = buildKDTree(points.slice(medianIndex + 1), depth + 1);
+  return node;
+}
+
+// Distance squared between two points
+function distSq(a, b) {
+  return (a.x - b.x)**2 + (a.y - b.y)**2;
+}
+
+// KD Tree nearest neighbor search with step-by-step tracing
+function nearestNeighbor(root, target) {
+  const stack = [];
+  const steps = [];
+  let best = { node: null, dist: Infinity };
+
+  function recursiveSearch(node) {
+    if(!node) return;
+
+    stack.push(node);
+    steps.push({ action: 'Visit Node', node });
+
+    // Calculate distance to current node
+    const d = distSq(node.point, target);
+    if(d < best.dist) {
+      best = { node, dist: d };
+      steps.push({ action: 'Update Best', node, dist: d });
+    }
+
+    // Determine which side to search first
+    const axis = node.axis;
+    const diff = (axis === 0 ? target.x - node.point.x : target.y - node.point.y);
+
+    const first = diff <= 0 ? node.left : node.right;
+    const second = diff <= 0 ? node.right : node.left;
+
+    // Search closer side
+    recursiveSearch(first);
+
+    // Check if we need to check the other side
+    if(diff*diff < best.dist) {
+      steps.push({ action: 'Check Other Side', node });
+      recursiveSearch(second);
+    }
+
+    stack.pop();
+  }
+
+  recursiveSearch(root);
+  return { best, steps };
+}
+
+// Build tree
+const kdRoot = buildKDTree(stores);
+
+// Run nearest neighbor search steps
+const result = nearestNeighbor(kdRoot, customer);
+const { best, steps } = result;
+
+const canvas = document.getElementById('kdCanvas');
+const ctx = canvas.getContext('2d');
+
+const width = canvas.width;
+const height = canvas.height;
+
+const margin = 60;
+const scaleX = (width - 2 * margin) / 10; // assuming max coordinate ~10
+const scaleY = (height - 2 * margin) / 10;
+
+// Convert data coords to canvas coords
+function toCanvasCoords(p) {
+  return {
+    x: margin + p.x * scaleX,
+    y: height - (margin + p.y * scaleY) // invert y for canvas
+  };
+}
+
+// Draw stores
+function drawStores() {
+  stores.forEach(s => {
+    const c = toCanvasCoords(s);
+    ctx.beginPath();
+    ctx.fillStyle = '#3be8ff';
+    ctx.strokeStyle = '#0b2545';
+    ctx.lineWidth = 2;
+    ctx.arc(c.x, c.y, 10, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Store label
+    ctx.fillStyle = '#d0e8ff';
+    ctx.font = 'bold 14px Segoe UI';
+    ctx.fillText(s.id, c.x + 12, c.y + 5);
+  });
+}
+
+// Draw customer
+function drawCustomer() {
+  const c = toCanvasCoords(customer);
+  ctx.beginPath();
+  ctx.fillStyle = '#e63946'; // red
+  ctx.strokeStyle = '#8b0000';
+  ctx.lineWidth = 3;
+  ctx.arc(c.x, c.y, 12, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 16px Segoe UI';
+  ctx.fillText('Customer', c.x + 15, c.y + 6);
+}
+
+// Draw line between two points
+function drawLine(p1, p2, color = '#3be8ff') {
+  const c1 = toCanvasCoords(p1);
+  const c2 = toCanvasCoords(p2);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(c1.x, c1.y);
+  ctx.lineTo(c2.x, c2.y);
+  ctx.stroke();
+}
+
+// Draw node highlight
+function drawHighlight(node) {
+  if(!node) return;
+  const c = toCanvasCoords(node.point);
+  ctx.beginPath();
+  ctx.strokeStyle = '#f1c40f'; // yellow
+  ctx.lineWidth = 6;
+  ctx.arc(c.x, c.y, 16, 0, 2 * Math.PI);
+  ctx.stroke();
+}
+
+// Draw KD Tree lines recursively
+function drawKDTreeLines(node, depth=0) {
+  if(!node) return;
+  const axis = node.axis;
+  if(node.left) {
+    drawLine(node.point, node.left.point, axis === 0 ? '#ff6f61' : '#61dafb');
+    drawKDTreeLines(node.left, depth + 1);
+  }
+  if(node.right) {
+    drawLine(node.point, node.right.point, axis === 0 ? '#ff6f61' : '#61dafb');
+    drawKDTreeLines(node.right, depth + 1);
+  }
+}
+
+// Draw everything for a step
+function drawStep(stepIndex) {
+  ctx.clearRect(0, 0, width, height);
+  drawKDTreeLines(kdRoot);
+  drawStores();
+  drawCustomer();
+
+  const step = steps[stepIndex];
+  if(!step) return;
+
+  if(step.action === 'Visit Node' || step.action === 'Update Best' || step.action === 'Check Other Side') {
+    drawHighlight(step.node);
+  }
+
+  // Update info box
+  document.getElementById('stepNumber').textContent = stepIndex + 1;
+  document.getElementById('currentNode').textContent = step.node.point.id;
+  
+  const bestStep = steps.slice(0, stepIndex + 1).filter(s => s.action === 'Update Best').pop();
+  if(bestStep) {
+    const distVal = Math.sqrt(bestStep.dist).toFixed(2);
+    document.getElementById('bestDist').textContent = distVal;
+    document.getElementById('bestNode').textContent = bestStep.node.point.id;
+  } else {
+    document.getElementById('bestDist').textContent = '∞';
+    document.getElementById('bestNode').textContent = 'None';
+  }
+
+  // Update table with current step
+  const tbody = document.getElementById('stepsTableBody');
+  tbody.innerHTML = '';
+  for(let i=0; i<=stepIndex; i++) {
+    const r = document.createElement('tr');
+    if(i === stepIndex) r.classList.add('highlight');
+    const s = steps[i];
+    const distStr = s.dist ? Math.sqrt(s.dist).toFixed(2) : '-';
+    r.innerHTML = `
+      <td>${i+1}</td>
+      <td>${s.action}</td>
+      <td>(${s.node.point.x}, ${s.node.point.y})</td>
+      <td>${distStr}</td>
+    `;
+    tbody.appendChild(r);
+  }
+}
+
+// Animate steps every 2 seconds
+let currentStep = 0;
+drawStep(currentStep);
+
+setInterval(() => {
+  currentStep++;
+  if(currentStep >= steps.length) currentStep = 0;
+  drawStep(currentStep);
+}, 2000);
+
+</script>
+
+</body>
+</html>

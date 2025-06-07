@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Live Inventory - HashMap Visualization | Tejashwini's Portfolio</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0c29;
+    color: #f0f0f0;
+    margin: 0;
+    padding: 20px 25px 50px;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+   h2, h3 {
+    color: #00f0ff;
+    border-bottom: 2px solid #00e6e6;
+  }
+  h1 {color: #00f0ff; text-align: center; margin-bottom: 30px; }
+  .section {
+    max-width: 900px;
+    margin: 0 auto 50px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 40px;
+  }
+  .code-block {
+    background: #1e1e2f;
+    color: #00ffcc;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.15rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin-bottom: 20px;
+  }
+  .complexity {
+    color: #aaa;
+    font-style: italic;
+    max-width: 900px;
+  }
+  .trace-container {
+    background: #11172a;
+    border: 2px solid #00f0ff;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 900px;
+    margin: 15px auto 0;
+    color: #00e0ff;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    user-select: none;
+    min-height: 250px;
+    position: relative;
+  }
+  .trace-step {
+    display: none;
+  }
+  .trace-step.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+  }
+  .trace-nav {
+    text-align: center;
+    margin-top: 15px;
+  }
+  .trace-nav button {
+    background-color: #00f0ff;
+    border: none;
+    color: #0f0c29;
+    font-weight: 700;
+    padding: 10px 22px;
+    margin: 0 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  .trace-nav button:disabled {
+    background-color: #004c4c;
+    cursor: default;
+  }
+  .trace-nav button:hover:not(:disabled) {
+    background-color: #00c0cc;
+  }
+  table.hashmap {
+    width: 100%;
+    max-width: 600px;  /* limit max width */
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.85rem;  /* smaller font */
+  }
+  table.hashmap th, table.hashmap td {
+    border: 1px solid #00f0ff;
+    padding: 4px 6px;  /* less padding */
+    text-align: left;
+    vertical-align: top;
+  }
+  table.hashmap th {
+    background-color: #003f4d;
+  }
+  .references {
+      font-size: 1rem;
+      color: #aaa;
+      max-width: 850px;
+      margin: 40px auto 80px;
+    }
+
+    .references ul {
+      padding-left: 20px;
+    }
+
+    .references li {
+      margin-bottom: 8px;
+    }
+
+    .references a {
+      color: #00aaff;
+      text-decoration: none;
+    }
+
+    .references a:hover {
+      text-decoration: underline;
+    }
+
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }
+  .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+</style>
+</head>
+<body>
+
+<h1>10. Walmart Live Inventory </h1>
+
+<div class="section">
+  <h2>Description</h2>
+  <p>
+  Walmart’s live inventory system uses hash tables to map unique SKUs (product IDs) to inventory data like stock, location, and pricing. This enables fast, real-time updates and lookups across stores.
+</p>
+<p>
+  SKUs are hashed into buckets, and collisions (when multiple SKUs map to the same bucket) are resolved using chaining (linked lists).
+</p>
+<p>
+  Hash tables allow constant-time operations on average, but in large-scale systems like Walmart’s, a few key challenges arise:
+</p>
+<ul>
+  <li> Handling hash collisions efficiently to avoid lookup delays.</li>
+  <li> Managing concurrent updates across distributed servers.</li>
+  <li> Keeping data consistent across caches and databases.</li>
+  <li>Scaling the hash structure to handle millions of products.</li>
+</ul>
+
+
+</div>
+
+
+<div class="section">
+  <h2>HashMap Insert Operation in Java</h2>
+  <div class="code-block">
+<pre>
+class HashMapExample {
+    static final int SIZE = 10; // size of hash table
+    static class Node {
+        String key;
+        String value;
+        Node next;
+        Node(String key, String value) {
+            this.key = key; this.value = value; this.next = null;
+        }
+    }
+    
+    Node[] table = new Node[SIZE];
+    
+    int hash(String key) {
+        return Math.abs(key.hashCode()) % SIZE;
+    }
+    
+    void put(String key, String value) {
+        int index = hash(key);
+        Node head = table[index];
+        Node newNode = new Node(key, value);
+        
+        if (head == null) {
+            table[index] = newNode;
+            return;
+        }
+        
+        // If key exists, update
+        Node curr = head;
+        while (curr != null) {
+            if (curr.key.equals(key)) {
+                curr.value = value;
+                return;
+            }
+            curr = curr.next;
+        }
+        
+        // Otherwise, insert at head
+        newNode.next = head;
+        table[index] = newNode;
+    }
+}
+</pre>
+  </div>
+  
+</div>
+
+
+<div class="section">
+  <h2>Interactive Insertion Trace</h2>
+  <p>Step through inserting 10 Walmart products (SKU and aisle location) into the HashMap.</p>
+  
+  <div class="trace-container" id="trace-container">
+    <!-- Steps inserted by JS -->
+  </div>
+
+  <div class="trace-nav">
+    <button id="prevBtn" disabled>⬅️ Previous</button>
+    <button id="nextBtn">Next ➡️</button>
+  </div>
+</div>
+
+<script>
+  // Walmart products: SKU -> Aisle Location
+  const products = [
+    {sku: "SKU12345", location: "Aisle 4"},
+    {sku: "SKU54321", location: "Aisle 7"},
+    {sku: "SKU67890", location: "Aisle 3"},
+    {sku: "SKU09876", location: "Aisle 5"},
+    {sku: "SKU11223", location: "Aisle 1"},
+    {sku: "SKU44556", location: "Aisle 9"},
+    {sku: "SKU78901", location: "Aisle 2"},
+    {sku: "SKU33445", location: "Aisle 8"},
+    {sku: "SKU55667", location: "Aisle 6"},
+    {sku: "SKU99887", location: "Aisle 10"},
+  ];
+
+  const SIZE = 10;
+  currentStep=0;
+  // Hash function simulating Java's hashCode mod SIZE
+  function hashCode(str) {
+    let hash = 0;
+    for (let i=0; i<str.length; i++) {
+      hash = (31 * hash + str.charCodeAt(i)) | 0; // int overflow sim
+    }
+    return Math.abs(hash) % SIZE;
+  }
+
+  // Table: array of buckets (arrays for chaining)
+  let table = Array(SIZE).fill(null).map(() => []);
+
+  // Steps for animation
+  let steps = [];
+
+  products.forEach((prod, idx) => {
+    let stepText = `<b>Inserting:</b> Key = <code>${prod.sku}</code>, Value = <code>${prod.location}</code><br>`;
+    const index = hashCode(prod.sku);
+    stepText += `Hash function result: <code>hash("${prod.sku}") = ${index}</code><br>`;
+    if(table[index].length === 0) {
+      stepText += `Bucket <code>[${index}]</code> is empty. Insert new node.<br>`;
+      table[index].push(prod);
+    } else {
+      // Check for existing key to update
+      let found = false;
+      for (let node of table[index]) {
+        if(node.sku === prod.sku) {
+          stepText += `Key exists in bucket <code>[${index}]</code>, update value.<br>`;
+          node.location = prod.location;
+          found = true;
+          break;
+        }
+      }
+      if(!found) {
+        stepText += `Collision! Bucket <code>[${index}]</code> already has entries.<br>`;
+        stepText += `Insert new node at head of the linked list.<br>`;
+        table[index].unshift(prod);
+      }
+    }
+
+    // Visualize full table state after insertion
+    stepText += `<br><b>Hash Table State (Bucket: Keys -> Values):</b><br>`;
+    stepText += '<table class="hashmap"><thead><tr><th>Bucket</th><th>Entries (SKU -> Location)</th></tr></thead><tbody>';
+    for(let i=0; i < SIZE; i++) {
+      if(table[i].length === 0) {
+        stepText += `<tr><td>${i}</td><td><i>empty</i></td></tr>`;
+      } else {
+        const entries = table[i].map(n => `${n.sku} → ${n.location}`).join('<br>');
+        stepText += `<tr><td>${i}</td><td>${entries}</td></tr>`;
+      }
+    }
+    stepText += '</tbody></table>';
+    
+    steps.push(stepText);
+  });
+
+  // DOM Elements
+  const traceContainer = document.getElementById('trace-container');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  
+  function showStep(step) {
+    traceContainer.innerHTML = steps[step];
+    prevBtn.disabled = (step === 0);
+    nextBtn.disabled = (step === steps.length -1);
+  }
+
+  prevBtn.addEventListener('click', () => {
+    if (currentStep > 0) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  });
+  nextBtn.addEventListener('click', () => {
+    if (currentStep < steps.length -1) {
+      currentStep++;
+      showStep(currentStep);
+    }
+  });
+  
+  
+  // Initialize first step
+  showStep(0);
+</script>
+<h3 style="text-align:center;"> Time and Space Complexity</h3>
+
+<table style="width: 60%; margin: 10px auto; border-collapse: collapse; color: #00f0ff; background: #11172a;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #00f0ff; padding: 8px;">Operation</th>
+      <th style="border: 1px solid #00f0ff; padding: 8px;">Average Time Complexity</th>
+      <th style="border: 1px solid #00f0ff; padding: 8px;">Worst Time Complexity</th>
+      <th style="border: 1px solid #00f0ff; padding: 8px;">Space Complexity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">Insert</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">O(1)</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">O(n) (all keys collide)</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;" rowspan="3">O(n)</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">Search</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">O(1)</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">O(n)</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">Delete</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">O(1)</td>
+      <td style="border: 1px solid #00f0ff; padding: 8px;">O(n)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<style>
+  .code-block pre {
+    background: #11172a;
+    color: #00f0ff;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    overflow-x: auto;
+  }
+  table th, table td {
+    text-align: center;
+  }
+</style>
+
+
+
+
+
+
+<div class="references">
+    <h2>📚 References</h2>
+    <ul>
+      <li><a href="https://www.geeksforgeeks.org/hashing-data-structure/" target="_blank">HashMap - GeeksForGeeks</a></li>
+      <li><a href="https://cp-algorithms.com/data_structures/fenwick.html" target="_blank">Fenwick Tree - CP Algorithms</a></li>
+      <li><a href="https://corporate.walmart.com" target="_blank">Walmart Corporate Site</a></li>
+    </ul>
+  </div>
+  <div class="nav-buttons">
+    <a href="route-optimization.html" title="Previous Case">Previous Case</a>
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  <a href="page-rank.html" title="Previous Case">Next Case Case</a>
+</div>
+
+</body>
+</html>
+
+

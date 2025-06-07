@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Walmart Product Graph – PageRank Analysis</title>
+
+  <!-- D3.js for the interactive graph -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    /* ───────── GLOBAL THEME ───────── */
+    :root {
+      --bg:      #0f0c29;
+      --panel:   #1a1a2f;
+      --accent:  #00f0ff;
+      --accent2: #00c7e6;
+      --text:    #f0f0f0;
+    }
+    * { box-sizing: border-box; }
+    body       { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); }
+    a          { color:var(--accent); text-decoration:none; }
+    a:hover    { text-decoration:underline; }
+    h1      { color:var(--accent); margin-top:40px; text-align: center;}
+    h2      { color:var(--accent); margin-top:40px;border-bottom: 2px solid #00e6e6; }
+    p,ul       { text-align:justify; line-height:1.6; }
+    ul         { padding-left:20px; }
+
+    .container { max-width:900px; margin:0 auto; padding:30px 20px; }
+    .section   { margin-top:40px; border-bottom:1px solid #333; padding-bottom:20px; }
+
+    /* ───────── GRAPH & TABLE ───────── */
+    svg        { width:90%; height:500px; display:block; background:var(--panel); border-radius:12px; margin:10px 3px; }
+    #rank-table{ max-width:500px; margin:15px auto; border-collapse:collapse; }
+    #rank-table th,
+    #rank-table td { border:1px solid var(--accent); padding:10px 4px; text-align:center; }
+    #rank-table th { background:#003f4d; }
+
+    /* ───────── NAV BUTTONS ───────── */
+    .nav-buttons      { display:flex; justify-content:center; gap:20px; margin:40px 0; }
+    .nav-buttons a    { background:var(--accent); color:var(--bg); padding:12px 28px; border-radius:8px; font-weight:700;
+                        transition:background-color .3s ease; }
+    .nav-buttons a:hover { background:var(--accent2); }
+    /* ───────── LAYOUT: GRAPH + TABLE SIDE-BY-SIDE ───────── */
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;          /* stacks on very small screens */
+  justify-content: center;  /* centers row items */
+  gap: 2%;                /* space between graph & table */
+  margin: 60px 0;
+}
+
+/* SVG graph grows to fill remaining space */
+#graph {
+  flex: 1 1 62%;            /* 60% of row, but flexible   */
+  min-width: 380px;         /* don’t shrink too small      */
+  height: 400px;            /* keep same height as before  */
+}
+
+/* Table gets a fixed-ish column */
+#rank-table {
+  flex: 1 1 38%;          /* ~40% of row, min 320px      */
+  max-width: 300px;
+  align-self: flex-start;   /* top-align with heading      */
+}
+.code-block {
+    background: #1e1e2f;
+    color: #00ffcc;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.15rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin-bottom: 20px;
+  }
+.styled-table {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background-color: #001a26;
+  color: #f0f0f0;
+  border: 1px solid #00f0ff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,255,255,0.1);
+}
+
+.styled-table thead {
+  background-color: #001a26;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 12px 16px;
+  border: 1px solid #00f0ff;
+  text-align: center;
+}
+
+.styled-table tbody tr:hover {
+  background-color: #2a2a40;
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ───────── TITLE ───────── -->
+  <h1>11.Product  Influence Mapping – PageRank Analysis</h1>
+
+  <!-- ───────── DESCRIPTION ───────── -->
+  <div class="section">
+    <h2> Description</h2>
+    <p>
+      PageRank (first devised at Google) recursively measures the “importance” of nodes in a graph.
+      Walmart applies the same idea to its <b>product co-purchase network</b>: each product is a node and
+      an edge connects two items that shoppers frequently buy together.  High-rank items help drive
+      cross-sell recommendations, shelf placement, inventory priority and anomaly detection.
+    </p>
+  </div>
+
+  <!-- ───────── REAL-WORLD SCENARIO ───────── -->
+  <div class="section">
+    <h2>Real Walmart Scenario</h2>
+    <p>
+      Shoppers often buy <em>Bread</em> with <em>Butter</em>, or <em>Diapers</em> with <em>Baby Wipes</em>.
+      Walmart aggregates millions of such baskets into a weighted network. PageRank surfaces the most
+      influential items so teams can:
+    </p>
+    <ul>
+      <li><b>Prioritise inventory:</b> avoid stock-outs on high-rank products.</li>
+      <li><b>Power “People also buy…”</b> widgets by score.</li>
+      <li><b>Detect anomalies:</b> sudden rank drops may signal supply issues.</li>
+      <li><b>Optimise store layout:</b> place top-rank items for maximum exposure.</li>
+    </ul>
+  </div>
+
+  <!-- ───────── CHALLENGES ───────── -->
+  <div class="section">
+    <h2>Challenges</h2>
+    <ul>
+      <li>Graphs are <b>massive & sparse</b> (millions of products).</li>
+      <li>Edge weights change hourly – need near-real-time updates.</li>
+      <li>Must damp universally-popular staples so niche links still surface.</li>
+    </ul>
+  </div>
+  <div class="section">
+  <h2>HashMap Insert Operation in Java</h2>
+  <div class="code-block">
+<pre>
+class HashMapExample {
+    static final int SIZE = 10; // size of hash table
+    static class Node {
+        String key;
+        String value;
+        Node next;
+        Node(String key, String value) {
+            this.key = key; this.value = value; this.next = null;
+        }
+    }
+    
+    Node[] table = new Node[SIZE];
+    
+    int hash(String key) {
+        return Math.abs(key.hashCode()) % SIZE;
+    }
+    
+    void put(String key, String value) {
+        int index = hash(key);
+        Node head = table[index];
+        Node newNode = new Node(key, value);
+        
+        if (head == null) {
+            table[index] = newNode;
+            return;
+        }
+        
+        // If key exists, update
+        Node curr = head;
+        while (curr != null) {
+            if (curr.key.equals(key)) {
+                curr.value = value;
+                return;
+            }
+            curr = curr.next;
+        }
+        
+        // Otherwise, insert at head
+        newNode.next = head;
+        table[index] = newNode;
+    }
+}
+</pre>
+  </div>
+  
+</div>
+
+  <!-- ───────── GRAPH VISUALISATION ───────── -->
+  <h2 style="text-align:center; margin-top:60px;">PageRank Algorithm Visualisation</h2>
+  <!-- ── GRAPH + TABLE ROW ── -->
+<div class="viz-row">
+  <svg id="graph"></svg>
+  <table id="rank-table"></table>
+</div>
+
+
+  <!-- ───────── SCORE TABLE ─────────
+  <h2 style="text-align:center;">Top PageRank Scores</h2>
+  <table id="rank-table"></table> -->
+
+  <!-- ───────── COMPLEXITY ───────── -->
+  <div class="section">
+  <h2>Time &amp; Space Complexity</h2>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Complexity Type</th>
+        <th>Complexity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Time</b> (power-iteration)</td>
+        <td>O((V + E) · I)</td>
+      </tr>
+      <tr>
+        <td><b>Space</b></td>
+        <td>O(V + E)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+  <!-- ───────── REFERENCES ───────── -->
+  <div class="section">
+    <h2>📚 References</h2>
+    <ul>
+      <li><a href="https://en.wikipedia.org/wiki/PageRank" target="_blank">PageRank – Wikipedia</a></li>
+      <li><a href="https://graphframes.github.io/" target="_blank">GraphFrames for Spark</a></li>
+      <li><a href="https://corporate.walmart.com/" target="_blank">Walmart Tech Blog</a></li>
+    </ul>
+  </div>
+
+  <!-- ───────── NAVIGATION ───────── -->
+  <div class="nav-buttons">
+    <a href="live-inventory.html">Previous Case</a>
+    <a href="index.html#business">Business Section</a>
+    <a href="fraud-detection.html">Next Case</a>
+  </div>
+
+</div> <!-- /.container -->
+
+<!-- ───────── PAGE RANK SCRIPT ───────── -->
+<script>
+/* ----- 1. Graph data (toy demo) ----- */
+const nodes = ["Bread","Butter","Milk","Cereal","Eggs","Diapers","Baby Wipes"];
+const edges = [
+  ["Bread","Butter"], ["Bread","Milk"], ["Butter","Milk"],
+  ["Milk","Cereal"], ["Eggs","Bread"], ["Milk","Diapers"],
+  ["Diapers","Baby Wipes"]
+];
+
+/* ----- 2. Build D3 graph structure ----- */
+const graph = {
+  nodes: nodes.map(n => ({ id: n, score: 1 / nodes.length })),
+  links: edges.map(([s,t]) => ({ source: s, target: t }))
+};
+
+/* ----- 3. PageRank parameters ----- */
+const damping   = 0.85;
+const iterations = 10;
+const N          = nodes.length;
+
+/* Utility: compute out-degree each iteration */
+function getOutDegrees() {
+  const out = Object.fromEntries(nodes.map(n => [n,0]));
+  graph.links.forEach(l => {
+    const src = typeof l.source === "object" ? l.source.id : l.source;
+    out[src] += 1;
+  });
+  return out;
+}
+
+/* One iteration of PageRank */
+function stepPageRank(prev) {
+  const next = Object.fromEntries(nodes.map(n => [n, (1-damping)/N]));
+  const outDeg = getOutDegrees();
+
+  graph.links.forEach(l => {
+    const src = typeof l.source === "object" ? l.source.id : l.source;
+    const tgt = typeof l.target === "object" ? l.target.id : l.target;
+    if (outDeg[src] > 0) {
+      next[tgt] += damping * prev[src] / outDeg[src];
+    }
+  });
+  return next;
+}
+
+/* ----- 4. D3 Force-Directed Graph ----- */
+const svg   = d3.select("#graph");
+const sim   = d3.forceSimulation(graph.nodes)
+  .force("link",   d3.forceLink(graph.links).id(d=>d.id).distance(150))
+  .force("charge", d3.forceManyBody().strength(-500))
+  .force("center", d3.forceCenter(svg.node().clientWidth/2, 250));
+
+const linkG = svg.append("g").attr("stroke", "#00f0ff").attr("stroke-width",1.5);
+const nodeG = svg.append("g");
+const labelG= svg.append("g").attr("fill","#fff").attr("font-size",14).attr("text-anchor","middle");
+
+const links = linkG.selectAll("line").data(graph.links).enter().append("line");
+
+const nodesSel = nodeG.selectAll("circle")
+  .data(graph.nodes).enter().append("circle")
+  .attr("fill", "#00f0ff")
+  .attr("r", 20)
+  .call(d3.drag()
+    .on("start", dragStart)
+    .on("drag",  dragMove)
+    .on("end",   dragEnd));
+
+const labels = labelG.selectAll("text")
+  .data(graph.nodes).enter().append("text")
+  .text(d=>d.id);
+
+/* Position updates each tick */
+sim.on("tick", () => {
+  links
+    .attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
+    .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+
+  nodesSel
+    .attr("cx",d=>d.x).attr("cy",d=>d.y)
+    .attr("r",d=>Math.max(12, 120*d.score));  // size ∝ rank
+
+  labels
+    .attr("x",d=>d.x)
+    .attr("y",d=>d.y+4);
+});
+
+/* ----- 5. PageRank animation & table ----- */
+let step = 0;
+updateTable();          // initial table
+animatePageRank();      // kick off iterations
+
+function animatePageRank(){
+  if (step >= iterations) return;
+
+  // Save current scores
+  const prev = Object.fromEntries(graph.nodes.map(n => [n.id, n.score]));
+  // Compute next
+  const next = stepPageRank(prev);
+  graph.nodes.forEach(n => n.score = next[n.id]);
+
+  updateTable();
+  nodesSel.transition().duration(600)
+          .attr("r",d=>Math.max(12, 120*d.score));
+
+  step += 1;
+  setTimeout(animatePageRank, 2000);
+}
+
+/* ----- 6. Rank table renderer ----- */
+function updateTable(){
+  const tbl = document.getElementById("rank-table");
+  const sorted = [...graph.nodes].sort((a,b)=>b.score - a.score);
+
+  let html = "<thead><tr><th>Rank</th><th>Product</th><th>Score</th></tr></thead><tbody>";
+  sorted.forEach((n,i)=>{
+    html += `<tr><td>${i+1}</td><td>${n.id}</td><td>${n.score.toFixed(4)}</td></tr>`;
+  });
+  html += "</tbody>";
+  tbl.innerHTML = html;
+}
+
+/* ----- 7. Drag helpers ----- */
+function dragStart(event){
+  if(!event.active) sim.alphaTarget(0.3).restart();
+  event.subject.fx = event.subject.x;
+  event.subject.fy = event.subject.y;
+}
+function dragMove(event){
+  event.subject.fx = event.x;
+  event.subject.fy = event.y;
+}
+function dragEnd(event){
+  if(!event.active) sim.alphaTarget(0);
+  event.subject.fx = null;
+  event.subject.fy = null;
+}
+</script>
+</body>
+</html>

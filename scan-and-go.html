@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan & Go - Walmart Portfolio | Tejashwini Godyal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0c29;
+    color: #f0f0f0;
+    margin: 0;
+    padding: 20px 25px 50px;
+    font-size: 18px;
+    line-height: 1.6;
+    }
+     h2, h3 {
+      color: #00f0ff;
+      border-bottom: 2px solid #00e6e6;
+    }
+     h1 { color: #00f0ff;text-align: center; margin-bottom: 30px; }
+    section {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 20px;
+      border-bottom: 2px solid #333;
+    }
+    .code-block {
+      background: #1e1e2f;
+      color: #00f0ff;
+      text-align: left;
+      padding: 20px;
+      font-family: monospace;
+      font-size: 1.15rem;
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+    .visual-box {
+      /* background: #222c4f; */
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px auto;
+      justify-content: center;
+    }
+    .highlight {
+      color: #00f0ff;
+      font-weight: bold;
+    }
+    .hash-table {
+      display: grid;
+      grid-template-columns: repeat(4, 180px);
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .box {
+      background: #1e1e2f;
+      border: 2px solid #555;
+      border-radius: 10px;
+      padding: 10px;
+      height: 100px;
+      opacity: 0.6;
+      transition: 0.3s;
+      font-size: 14px;
+    }
+
+    .active {
+      border-color: #00f0ff;
+      background-color: #222c4f;
+      box-shadow: 0 0 10px #00f0ff;
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .label {
+      font-weight: bold;
+      color: #00f0ff;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .table-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  margin-left: 60px;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+}
+
+.slot-label {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00f0ff;
+  width: 100px;
+}
+
+.entry-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.entry {
+  background: #334;
+  padding: 6px 10px;
+  margin: 2px;
+  border-radius: 6px;
+  border: 1px solid #00ffaa;
+  font-size: 12px;
+  white-space: nowrap;
+  animation: fadeIn 0.4s ease-in;
+}
+
+.arrow {
+  margin: 0 5px;
+  color: #00ffaa;
+  font-size: 18px;
+}
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .references {
+      font-size: 0.95rem;
+      color: #aaa;
+      
+    }
+
+    .references a {
+      color: #00aaff;
+      text-decoration: none;
+    }
+
+    .references a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1> 3.Instant Checkout with Walmart's Scan & Go</h1>
+
+  <section>
+  <h2>Description</h2>
+  <p><strong>Walmart Scan & Go</strong> is a real-time shopping solution that lets customers scan products using their phones, instantly look up product details, and build a live cart for a fast, seamless checkout experience.</p>
+  <p>The system uses advanced algorithms for:</p>
+  <ul>
+    <li> Quick product lookup with Hash Maps (Lookup Tables)</li>
+    <li>Real-time cart total updates using Segment Trees</li>
+    <li> Undo and history management with Persistent Segment Trees</li>
+  </ul>
+  
+</section>
+
+  <section>
+    <h2>🔢 Step 1: Product Lookup using Hash Map (Lookup Table)</h2>
+    <div class="code-block">
+<pre>
+import java.util.HashMap;
+import java.util.Map;
+
+class Product {
+    String name;
+    int price; // price in rupees
+
+    public Product(String name, int price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+public class ScanAndGoCatalog {
+    public static void main(String[] args) {
+        // Create a catalog mapping barcode IDs to products
+        Map<String, Product> catalog = new HashMap<>();
+
+        // Add some products
+        catalog.put("MILK123", new Product("Milk", 40));
+        catalog.put("BRD456", new Product("Bread", 25));
+        catalog.put("EGG789", new Product("Eggs (dozen)", 60));
+        catalog.put("RICE101", new Product("Basmati Rice (1kg)", 120));
+        catalog.put("SUG202", new Product("Sugar (1kg)", 45));
+
+        // Simulate scanning a product barcode
+        String scannedBarcode = "MILK123";
+        Product scanned = catalog.get(scannedBarcode);
+
+        if (scanned != null) {
+            System.out.println(scanned.name + " - ₹" + scanned.price);
+        } else {
+            System.out.println("Product with barcode " + scannedBarcode + " not found.");
+        }
+    }
+}
+</pre>
+</div>
+   <h1> Hash Table Insertion Tracing - Scan & Go</h1>
+
+<div class="table-wrapper" id="hashTable">
+  <!-- JS will inject slots -->
+</div>
+
+<script>
+  const TABLE_SIZE = 5;
+  const data = [
+    { key: "MILK123", name: "Milk", price: 40 },
+    { key: "BRD456", name: "Bread", price: 25 },
+    { key: "EGG789", name: "Eggs", price: 60 },
+    { key: "RICE101", name: "Rice", price: 120 },
+    { key: "SUG202", name: "Sugar", price: 45 },
+    { key: "OIL909", name: "Oil", price: 180 },
+    { key: "PNTR333", name: "Peanut Butter", price: 95 },
+    { key: "SPC666", name: "Spices", price: 55 }
+  ];
+
+  const hashTableDiv = document.getElementById("hashTable");
+  let i = 0;
+
+  // Simple hash function
+  function hash(key) {
+    let sum = 0;
+    for (let ch of key) {
+      sum += ch.charCodeAt(0);
+    }
+    return sum % TABLE_SIZE;
+  }
+
+  // Create slots and wrappers
+  for (let i = 0; i < TABLE_SIZE; i++) {
+    const slot = document.createElement("div");
+    slot.className = "slot";
+    slot.id = `slot-${i}`;
+
+    const label = document.createElement("div");
+    label.className = "slot-label";
+    label.innerText = `Index ${i}`;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "entry-wrapper";
+    wrapper.id = `wrapper-${i}`;
+
+    slot.appendChild(label);
+    slot.appendChild(wrapper);
+    hashTableDiv.appendChild(slot);
+  }
+
+  function insertNext() {
+  if (i >= data.length) {
+    setTimeout(() => {
+      for (let j = 0; j < TABLE_SIZE; j++) {
+        document.getElementById(`wrapper-${j}`).innerHTML = "";
+      }
+      i = 0;
+      insertNext();
+    }, 2000);
+    return;
+  }
+
+  const item = data[i];
+  const index = hash(item.key);
+  const wrapper = document.getElementById(`wrapper-${index}`);
+
+  if (wrapper.children.length > 0) {
+    const arrow = document.createElement("div");
+    arrow.className = "arrow";
+    arrow.innerHTML = "→";
+    wrapper.appendChild(arrow);
+  }
+
+  const entry = document.createElement("div");
+  entry.className = "entry";
+  entry.innerText = `${item.key}`;
+
+  wrapper.appendChild(entry);
+
+  i++;
+  setTimeout(insertNext, 1200);
+}
+  insertNext();
+</script>
+
+  </section>
+
+  <section>
+    <h2>💰 Step 2: Live Cart Total using Segment Tree</h2>
+    <div class="code-block">
+<pre>
+public class SegmentTree {
+    private int[] tree;
+    private int size;
+
+    
+    public SegmentTree(int n) {
+        size = 1;
+        while (size < n) size <<= 1; 
+        tree = new int[2 * size];
+    }
+
+    
+    public void update(int idx, int value) {
+        idx += size; 
+        tree[idx] = value;
+        idx /= 2;
+        while (idx > 0) {
+            tree[idx] = tree[2 * idx] + tree[2 * idx + 1];  
+            idx /= 2;
+        }
+    }
+
+   
+    public int query(int l, int r) {
+        l += size;
+        r += size;
+        int sum = 0;
+        while (l <= r) {
+            if ((l & 1) == 1) sum += tree[l++];
+            if ((r & 1) == 0) sum += tree[r--];
+            l >>= 1;
+            r >>= 1;
+        }
+        return sum;
+    }
+
+   
+    public void printTree() {
+        System.out.println("Segment Tree Array:");
+        for (int i = 1; i < 2 * size; i++) {
+            System.out.print(tree[i] + " ");
+        }
+        System.out.println();
+    }
+
+    
+    public static void main(String[] args) {
+        SegmentTree cartTree = new SegmentTree(100); 
+
+        
+        cartTree.update(0, 40); // MILK ₹40
+        cartTree.update(1, 25); // BREAD ₹25
+        cartTree.update(2, 30); // EGGS ₹30
+
+       
+        int total = cartTree.query(0, 2);
+        System.out.println("Total: ₹" + total); // Expected: ₹95
+
+       
+        cartTree.update(1, 35);
+
+        
+        total = cartTree.query(0, 2);
+        System.out.println("Total after update: ₹" + total); 
+
+        cartTree.printTree();
+    }
+}
+
+</pre>
+    </div>
+    <div class="visual-box">
+  <img src="https://he-s3.s3.amazonaws.com/media/uploads/eec15d3.jpg" alt="Segment Tree Visualization" style="max-width: 100%; border-radius: 12px; box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);">
+</div>
+
+  </section>
+
+  <section>
+    <h2>↩️ Step 3: Undo/History with Persistent Segment Tree</h2>
+    <div class="code-block">
+<pre>
+import java.util.*;
+
+public class PersistentSegmentTree {
+    private class Node {
+        int sum;
+        Node left, right;
+        public Node(int sum, Node left, Node right) {
+            this.sum = sum;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    private int n;
+    private List<Node> versions;  
+
+    public PersistentSegmentTree(int size) {
+        this.n = size;
+        versions = new ArrayList<>();
+        versions.add(build(0, n - 1));  // initial empty tree
+    }
+
+    // Build empty tree (all zero)
+    private Node build(int start, int end) {
+        if (start == end) {
+            return new Node(0, null, null);
+        }
+        int mid = (start + end) / 2;
+        return new Node(0, build(start, mid), build(mid + 1, end));
+    }
+
+    // Update a version at index pos with value val, return new root
+    private Node update(Node node, int start, int end, int pos, int val) {
+        if (start == end) {
+            return new Node(val, null, null);
+        }
+        int mid = (start + end) / 2;
+        if (pos <= mid) {
+            return new Node(
+                node.sum - (node.left != null ? node.left.sum : 0) + val + (node.right != null ? node.right.sum : 0),
+                update(node.left, start, mid, pos, val),
+                node.right
+            );
+        } else {
+            return new Node(
+                node.sum - (node.right != null ? node.right.sum : 0) + val + (node.left != null ? node.left.sum : 0),
+                node.left,
+                update(node.right, mid + 1, end, pos, val)
+            );
+        }
+    }
+
+    // Better version that sums children properly:
+    private Node updateFixed(Node node, int start, int end, int pos, int val) {
+        if (start == end) {
+            return new Node(val, null, null);
+        }
+        int mid = (start + end) / 2;
+        if (pos <= mid) {
+            Node leftChild = updateFixed(node.left, start, mid, pos, val);
+            return new Node(leftChild.sum + node.right.sum, leftChild, node.right);
+        } else {
+            Node rightChild = updateFixed(node.right, mid + 1, end, pos, val);
+            return new Node(node.left.sum + rightChild.sum, node.left, rightChild);
+        }
+    }
+
+    // Public update: create new version with updated value at pos
+    public void update(int versionIndex, int pos, int val) {
+        Node root = versions.get(versionIndex);
+        Node newRoot = updateFixed(root, 0, n - 1, pos, val);
+        versions.add(newRoot);
+    }
+
+    // Query sum in range [l, r] in version versionIndex
+    public int query(int versionIndex, int l, int r) {
+        return query(versions.get(versionIndex), 0, n - 1, l, r);
+    }
+
+    private int query(Node node, int start, int end, int l, int r) {
+        if (node == null || r < start || l > end) return 0;
+        if (l <= start && end <= r) return node.sum;
+        int mid = (start + end) / 2;
+        return query(node.left, start, mid, l, r) + query(node.right, mid + 1, end, l, r);
+    }
+
+    // Get number of versions created
+    public int getVersionCount() {
+        return versions.size();
+    }
+
+    public static void main(String[] args) {
+        int n = 5; // max items in cart
+        PersistentSegmentTree versionedCart = new PersistentSegmentTree(n);
+
+        // Version 0: initial empty cart
+        // Update item 0 to 40 in new version v1
+        versionedCart.update(0, 0, 40); // v1 (index 1)
+        // Update item 1 to 25 in new version v2
+        versionedCart.update(1, 1, 25); // v2 (index 2)
+        // Update item 2 to 50 in new version v3
+        versionedCart.update(2, 2, 50); // v3 (index 3)
+
+        System.out.println("Total items price in version 1 (items 0 to 1): ₹" +
+            versionedCart.query(1, 0, 1)); // expects 40 (item 0) + 0 (item 1 not updated in v1) = 40
+
+        System.out.println("Total items price in version 2 (items 0 to 2): ₹" +
+            versionedCart.query(2, 0, 2)); // expects 40 + 25 + 0 = 65
+
+        System.out.println("Total items price in version 3 (items 0 to 2): ₹" +
+            versionedCart.query(3, 0, 2)); // expects 40 + 25 + 50 = 115
+    }
+}
+
+</pre>
+    </div>
+    <div class="visual-box" style="text-align: center; margin-top: 1rem;">
+  <img src="https://media.geeksforgeeks.org/wp-content/uploads/16709563_1296205210463946_402785728_o.png" alt="GeeksforGeeks Visualization" style="max-width: 100%; border-radius: 12px; box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);">
+  <p style="color: #00ffff; font-size: 0.85rem; margin-top: 0.5rem;">
+    Image source: <a href="https://media.geeksforgeeks.org/wp-content/uploads/16709563_1296205210463946_402785728_o.png" target="_blank" style="color: #00ffff; text-decoration: underline;">GeeksforGeeks</a>
+  </p>
+</div>
+
+  </section>
+
+  <section style="text-align: center; color: #00ffff;">
+  <h2> Complexity Analysis</h2>
+  <table
+    style="
+      margin: 0 auto;
+      border-collapse: collapse;
+      border: 2px solid #00ffff;
+      max-width: 600px;
+      width: 90%;
+      color: #00ffff;
+      font-family: Arial, sans-serif;
+    "
+  >    <thead>
+      <tr style="border-bottom: 2px solid #00ffff;">
+        <th
+          style="
+            padding: 12px;
+            border: 1px solid #00ffff;
+            text-align: center;
+            background-color: rgba(0, 255, 255, 0.1);
+          "
+        >
+          Data Structure
+        </th>
+        <th
+          style="
+            padding: 12px;
+            border: 1px solid #00ffff;
+            text-align: center;
+            background-color: rgba(0, 255, 255, 0.1);
+          "
+        >
+          Time Complexity
+        </th>
+        >
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #00ffff;">
+        <td style="padding: 10px; border: 1px solid #00ffff; text-align: center;">
+          <strong>Lookup Table</strong>
+        </td>
+        <td style="padding: 10px; border: 1px solid #00ffff; text-align: center;">
+          O(1) product access
+        </td>
+        
+      </tr>
+      <tr style="border-bottom: 1px solid #00ffff;">
+        <td style="padding: 10px; border: 1px solid #00ffff; text-align: center;">
+          <strong>Segment Tree</strong>
+        </td>
+        <td style="padding: 10px; border: 1px solid #00ffff; text-align: center;">
+          O(log n) update/total
+        </td>
+        
+      </tr>
+      <tr>
+        <td style="padding: 10px; border: 1px solid #00ffff; text-align: center;">
+          <strong>Persistent Tree</strong>
+        </td>
+        <td style="padding: 10px; border: 1px solid #00ffff; text-align: center;">
+          O(log n) per version rollback
+        </td>
+        
+      </tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 1rem;">
+    Used efficiently in <strong>Scan & Go</strong> for fast, real-time, customer-friendly shopping experience.
+  </p>
+</section>
+
+
+  <div class="section references" style="text-align: left; color: #00aaff; max-width: 600px; margin: 2rem auto;">
+  <h2>References</h2>
+  <ul style="list-style-type: none; padding: 0;">
+    <li style="margin: 0.5rem 0;">
+      <a href="https://developer.walmart.com" target="_blank" rel="noopener noreferrer" style="color: #00aaff; text-decoration: underline;">
+        Walmart Developer Portal
+      </a>
+    </li>
+    <li style="margin: 0.5rem 0;">
+      <a href="https://www.geeksforgeeks.org/hashmap-in-java/" target="_blank" rel="noopener noreferrer" style="color: #00aaff; text-decoration: underline;">
+        GeeksforGeeks – HashMap in Java
+      </a>
+    </li>
+    <li style="margin: 0.5rem 0;">
+      <a href="https://cp-algorithms.com/data_structures/segment_tree.html" target="_blank" rel="noopener noreferrer" style="color: #00aaff; text-decoration: underline;">
+        CP-Algorithms – Segment Trees
+      </a>
+    </li>
+    <li style="margin: 0.5rem 0;">
+      <a href="https://codeforces.com/blog/entry/73258" target="_blank" rel="noopener noreferrer" style="color: #00aaff; text-decoration: underline;">
+        Codeforces – Persistent Segment Trees Explained
+      </a>
+    </li>
+    <li style="margin: 0.5rem 0;">
+      <a href="https://en.wikipedia.org/wiki/Scan_%26_Go" target="_blank" rel="noopener noreferrer" style="color: #00aaff; text-decoration: underline;">
+        Wikipedia – Scan & Go Retail Checkout
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+  
+</div>
+<style>
+    .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+  </style>
+  <div class="nav-buttons">
+  <a href="wallet-balance.html" title="Previous Case"> Previous Case</a>
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  <a href="express-checkout.html" title="Previous Case">Next Case Case</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fraud Detection – MO's Algorithm | Tejashwini's Portfolio</title>
+  <!-- Icons & Particles -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+
+  <!-- Dark Galaxy Theme Styles (re‑used across portfolio) -->
+  <style>
+    /* Base layout */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0c29;               /* midnight‑blue gradient */
+      color: #f0f0f0;
+      margin: 0;
+      padding: 24px 26px 60px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    h2, h3 { color: #00f0ff; border-bottom: 2px solid #00e6e6;}
+    h1 { color: #00f0ff; text-align: center; margin-bottom: 32px; }
+    .section {
+      max-width: 900px;
+      margin: 0 auto 52px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 40px;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: #1e1e2f;
+      color: #00ffcc;
+      padding: 22px;
+      border-radius: 10px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 1.05rem;
+      overflow-x: auto;
+      white-space: pre;
+      margin-bottom: 22px;
+    }
+
+    /* Complexity table */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #00f0ff;
+      padding: 10px 12px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    th {
+      background-color: rgba(0, 255, 255, 0.12);
+    }
+
+    /* Trace (step‑by‑step) container */
+    .trace-container {
+      background: #11172a;
+      border: 2px solid #00f0ff;
+      border-radius: 10px;
+      padding: 22px;
+      max-width: 900px;
+      margin: 18px auto 0;
+      color: #00e0ff;
+      font-size: 1.05rem;
+      user-select: none;
+      position: relative;
+    }
+    .trace-step { display: none; }
+    .trace-step.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn { from {opacity:0;transform:scale(.9);} to {opacity:1;transform:scale(1);} }
+    .trace-nav { text-align: center; margin-top: 18px; }
+    .trace-nav button {
+      background-color: #00f0ff;
+      border: none; color: #0f0c29;
+      font-weight: 700; padding: 10px 24px;
+      margin: 0 12px; border-radius: 8px;
+      cursor: pointer; font-size: 1rem;
+      transition: background-color .25s ease;
+    }
+    .trace-nav button:disabled { background:#004c4c; cursor:default; }
+    .trace-nav button:hover:not(:disabled) { background:#00c0cc; }
+
+    /* Navigation buttons */
+    .nav-btn {
+      background:#00f0ff; color:#0f0c29;
+      padding: 12px 28px; border-radius:8px;
+      font-weight:700; text-decoration:none;
+      display:inline-block; margin:0 10px 0; user-select:none;
+      transition:background .3s ease;
+    }
+    .nav-btn:hover { background:#00c0cc; }
+
+    /* References list */
+    .references { font-size: 1rem; color:#aaa; max-width:850px; margin:40px auto 80px; }
+    .references ul { padding-left: 22px; }
+  </style>
+</head>
+<body>
+  <!-- ===== PAGE TITLE ===== -->
+  <h1>12.Walmart Fraud Detection — MO's Algorithm</h1>
+
+  <!-- ===== DESCRIPTION & CHALLENGES ===== -->
+  <section class="section">
+    <h2>Description & Challenges</h2>
+    <p> Walmart fraud‑analytics teams continuously run <em>hundreds of offline range queries</em> over the daily transaction log. A typical question is: <em>“How many distinct customer‑card IDs triggered refunds between day <i>L</i> and day <i>R</i>?”</em> Answering each query naively would rescan the log and stall dashboards.</p>
+    <ul>
+      <li><strong>Speed:</strong> 10<sup>5</sup> queries on 10<sup>5</sup> rows must finish in &lt;1 s.</li>
+      <li> <strong>Fraud Patterns:</strong> Spot refund abuse, return‑cycling, or card cloning spikes.</li>
+      <li> <strong>Memory‑Light:</strong> Works with only two frequency arrays — no heavy SQL indices.</li>
+      <li> <strong>Rollback‑Friendly:</strong> Analysts can adjust <em>L,R</em> on‑the‑fly without recomputing from scratch.</li>
+    </ul>
+  </section>
+
+  <!-- ===== JAVA IMPLEMENTATION ===== -->
+  <section class="section">
+    <h2> Java Implementation</h2>
+    <div class="code-block"><pre>// Java implementation of MO's Algorithm for fraud‑range queries
+import java.util.*;
+
+public class FraudMos {
+    // Encoded daily event log (customerCardId per transaction)
+    static int[] log = {7, 8, 7, 12, 15, 8, 12, 7, 8};
+    static int n = log.length;
+
+    static class Query implements Comparable<Query> {
+        int L, R, idx;            // 0‑based inclusive
+        static int blockSize;
+        Query(int L, int R, int idx){ this.L=L; this.R=R; this.idx=idx; }
+        public int compareTo(Query q){
+            int b1 = this.L / blockSize, b2 = q.L / blockSize;
+            if (b1!=b2) return b1-b2;
+            return (b1 & 1)==0 ? this.R - q.R : q.R - this.R;  // Hilbert‑like tweak
+        }
+    }
+
+    public static void main(String[] args){
+        Query[] Q = {
+            new Query(0,4,0), // days 0‑4
+            new Query(1,3,1), // 1‑3
+            new Query(2,7,2), // 2‑7
+            new Query(3,8,3)  // 3‑8
+        };
+
+        Query.blockSize = (int)Math.sqrt(n);
+        Arrays.sort(Q);
+
+        int[] freq = new int[100000]; // customer‑ID frequency
+        int currL=0, currR=-1, distinct=0;
+        int[] ans = new int[Q.length];
+
+        for(Query q:Q){
+            while(currR < q.R){ if(++freq[log[++currR]]==1) distinct++; }
+            while(currR > q.R){ if(--freq[log[currR--]]==0) distinct--; }
+            while(currL < q.L){ if(--freq[log[currL++]]==0) distinct--; }
+            while(currL > q.L){ if(++freq[log[--currL]]==1) distinct++; }
+            ans[q.idx]=distinct;
+        }
+
+        for(int i=0;i<ans.length;i++)
+            System.out.println("Query " + (i+1) + " distinct cards: " + ans[i]);
+    }
+}</pre></div>
+  </section>
+
+  <!-- ===== VISUALISATION ===== -->
+  <section class="section">
+    <h2> Visual Walkthrough (Pointer Moves)</h2>
+    <div class="trace-container" id="visual">
+      <!-- Each .trace-step will be toggled by JS buttons -->
+      <div class="trace-step active"><strong>Init:</strong> <code>currL=0</code>, <code>currR=-1</code>, empty window.</div>
+      <div class="trace-step"><strong>Add log[0..3]</strong> → window [7,8,7,12] → distinct = 3.</div>
+      <div class="trace-step"><strong>Remove log[0]</strong> → window [8,7,12] → distinct = 3.</div>
+      <div class="trace-step"><strong>Add log[4]</strong> → window [8,7,12,15] → distinct = 4.</div>
+      <div class="trace-step"><strong>Slide to 2‑7</strong> (drop 0‑1, add 5‑7) → window [7,12,15,8,12,7] → distinct = 4.</div>
+      <div class="trace-step"><strong>Add 8</strong> (R→8) → window [7,12,15,8,12,7,8] → distinct = 4.</div>
+    </div>
+    <div class="trace-nav">
+      <button id="prev" disabled>Prev</button>
+      <button id="next">Next</button>
+    </div>
+  </section>
+  <!-- ===== VISUALIZATION TABLE ===== -->
+<section class="section">
+  <h2>🔍 Visual Walkthrough - MO's Pointer Simulation</h2>
+  <div style="overflow-x:auto;">
+    <table class="hashmap">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Action</th>
+          <th>Window [L..R]</th>
+          <th>Distinct Count</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Init</td>
+          <td>Initialize window</td>
+          <td>[ ]</td>
+          <td>0</td>
+          <td>currL = 0, currR = -1, empty</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>Add log[0..3]</td>
+          <td>[7, 8, 7, 12]</td>
+          <td>3</td>
+          <td>Distinct: {7, 8, 12}</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Remove log[0]</td>
+          <td>[8, 7, 12]</td>
+          <td>3</td>
+          <td>7 still exists</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Add log[4]</td>
+          <td>[8, 7, 12, 15]</td>
+          <td>4</td>
+          <td>Added new element: 15</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Move to [2..7]</td>
+          <td>[7, 12, 15, 8, 12, 7]</td>
+          <td>4</td>
+          <td>Removed log[0,1], added log[5,6,7]</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Add log[8]</td>
+          <td>[7, 12, 15, 8, 12, 7, 8]</td>
+          <td>4</td>
+          <td>8 already present</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+  <!-- ===== COMPLEXITY ===== -->
+  <section class="section">
+    <h2> Complexity Summary</h2>
+    <table>
+      <thead>
+        <tr><th>Phase</th><th>Time Complexity</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Sort Queries</td><td>O(Q log Q)</td><td>Java Arrays.sort</td></tr>
+        <tr><td>Process Queries</td><td>O((N + Q) × √N)</td><td>Pointer moves per block</td></tr>
+        <tr><td>Total</td><td><strong>O((N + Q) × √N)</strong></td><td>Dominant term</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== REFERENCES ===== -->
+  <section class="references">
+    <h2>References</h2>
+    <ul>
+      <li><a href="https://cp-algorithms.com/data_structures/sqrt_decomposition.html" target="_blank">CP‑Algorithms – MO's Algorithm</a></li>
+      <li><a href="https://developer.walmart.com" target="_blank">Walmart Developer Portal</a></li>
+      <li><a href="https://codeforces.com/blog/entry/72690" target="_blank">Codeforces – MO's Algorithm Tutorial</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Credit_card_fraud" target="_blank">Wikipedia – Credit‑Card Fraud</a></li>
+    </ul>
+  </section>
+
+  <style>
+    .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+  }
+  .nav-buttons a {
+    background-color: #00f0ff;
+    color: #0f0c29;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    user-select: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .nav-buttons a:hover {
+    background-color: #00c7e6;
+  }
+  </style>
+  <div class="nav-buttons">
+  <a href="page-rank.html" title="Previous Case"> Previous Case</a>
+  <a href="index.html#business" title="Business Section"> Go to Business Section</a>
+  
+</div>
+
+
+  <!-- ===== TRACE NAV SCRIPT ===== -->
+  <script>
+    const steps = Array.from(document.querySelectorAll('.trace-step')),
+          prevBtn = document.getElementById('prev'),
+          nextBtn = document.getElementById('next');
+    let idx = 0;
+    function render() {
+      steps.forEach((s,i)=>s.classList.toggle('active', i===idx));
+      prevBtn.disabled = idx===0;
+      nextBtn.disabled = idx===steps.length-1;
+    }
+    prevBtn.onclick = ()=>{ if(idx>0){idx--; render();} };
+    nextBtn.onclick = ()=>{ if(idx<steps.length-1){idx++; render();} };
+  </script>
+</body>
+</html>
